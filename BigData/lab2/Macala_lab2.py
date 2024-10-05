@@ -10,19 +10,12 @@ from sklearn.metrics import classification_report, confusion_matrix, mean_square
 import joblib
 
 # Sidebar for option selection
-option = st.sidebar.radio("Streamlit App", ['Classification Task', 'Regression Task'])
+option = st.sidebar.radio("Streamlit App", ['Classification Task', 'Regression Task','Prediction Models'])
 st.sidebar.write("""  
     ### Instructions:
     1. Upload your CSV dataset.
     2. Click the button to evaluate the model.
       """)
-
-# Function to load the dataset with caching
-@st.cache_data
-def load_data(uploaded_file):
-    names = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal', 'target']
-    dataframe = pd.read_csv(uploaded_file, names=names)
-    return dataframe
 
 # Classification Task
 if option == 'Classification Task':
@@ -30,175 +23,7 @@ if option == 'Classification Task':
 
     # RESAMPLING TECHNIQUES
     st.header("RESAMPLING TECHNIQUES")
-    # Split into Train and Test Sets
-    st.header("Split into Train and Test Sets")
-
-    # File uploader for dataset
-    uploaded_file = st.file_uploader("Upload your CSV dataset", type="csv")
-
-    if uploaded_file is not None:
-        # Read dataset
-        data = pd.read_csv(uploaded_file)
-        
-        # Create two columns for Data Info and Missing Values
-        col1, col2 = st.columns(2)
-
-        #  first column
-        with col1:
-            st.write("### Dataset Preview:")
-            st.write(data.head())
-            
-
-        # second column
-        with col2:
-            # Split into input and output variables
-            X = data.iloc[:, :-1].values  # All columns except the last one
-            Y = data.iloc[:, -1].values    # Last column
-            st.write("### Shape of the Dataset:")
-            st.write(data.shape)
-
-            # Set the test size using a slider
-            test_size = st.slider("Test size (as a percentage)", 10, 50, 20) / 100
-            seed = 7
-
-            # Split the dataset into test and train
-            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
-
-            # Train the Logistic Regression model
-            model = LogisticRegression(max_iter=200)
-            model.fit(X_train, Y_train)
-
-            # Evaluate the accuracy
-            accuracy = model.score(X_test, Y_test) * 100
-            st.write(f"Accuracy: {accuracy:.3f}%")
-
-            # Interpretation based on accuracy ranges
-            if accuracy >= 90:
-                interpretation = "Excellent performance! The model is highly accurate."
-            elif 80 <= accuracy < 90:
-                interpretation = "Good performance. The model is performing well but can still be improved."
-            elif 70 <= accuracy < 80:
-                interpretation = "Fair performance. The model might need some improvements."
-            else:
-                interpretation = "Poor performance. Consider revisiting the model and features."
-            
-            st.write(f"**Interpretation:** {interpretation}")
-
-        # Accuracy guide
-        st.write("""
-        ### Accuracy Guide:
-        - **90% - 100%**: Excellent performance
-        - **80% - 90%**: Good performance
-        - **70% - 80%**: Fair performance
-        - **Below 70%**: Poor performance, requires improvement
-        """)
-
-        # Train the model on the entire dataset and save it
-        model.fit(X, Y)
-        model_filename = "logistic_regression_model.joblib"
-        joblib.dump(model, model_filename)
-        st.success(f"Model saved as {model_filename}")
-
-        # Option to download the model
-        with open(model_filename, "rb") as f:
-            st.download_button("Download Model", f, file_name=model_filename)
-
-        # Model upload for prediction
-        st.subheader("Upload a Saved Model for Prediction")
-        uploaded_model = st.file_uploader("Upload your model (joblib format)", type=["joblib"])
-
-        if uploaded_model is not None:
-            model = joblib.load(uploaded_model)
-
-            # Sample input data for prediction
-            st.subheader("Input Sample Data for Heart Disease Prediction")
-            name = st.text_input("Enter your name:", "")
-            age = st.number_input("Age", min_value=0, max_value=120, value=0)
-            sex = st.number_input("Sex (1 = male, 0 = female)", min_value=0, max_value=1, value=0)
-            cp = st.number_input("Chest pain type (0: typical angina, 1: atypical angina, 2: non-anginal pain, 3: asymptomatic)", min_value=0, max_value=3, value=0)
-            trestbps = st.number_input("Resting Blood Pressure (mm Hg) (80-200)", min_value=80, max_value=200, value=120)
-            chol = st.number_input("Serum Cholesterol (mg/dl) (100-600)", min_value=100, max_value=600, value=200)
-            fbs = st.number_input("Fasting Blood Sugar > 120 mg/dl (1 = true, 0 = false)", min_value=0, max_value=1, value=0)
-            restecg = st.number_input("Resting Electrocardiographic Results (0: normal, 1: having ST-T wave abnormality, 2: showing probable or definite left ventricular hypertrophy)", min_value=0, max_value=2, value=0)
-            thalach = st.number_input("Maximum Heart Rate Achieved (60-220)", min_value=60, max_value=220, value=150)
-            exang = st.number_input("Exercise Induced Angina (1 = yes, 0 = no)", min_value=0, max_value=1, value=0)
-            oldpeak = st.number_input("ST depression induced by exercise relative to rest (0.0-7.0)", min_value=0.0, max_value=7.0, value=0.0)
-            slope = st.number_input("Slope of the peak exercise ST segment (0: upsloping, 1: flat, 2: downsloping)", min_value=0, max_value=2, value=0)
-            ca = st.number_input("Number of major vessels (0-3) colored by fluoroscopy", min_value=0, max_value=3, value=0)
-            thal = st.number_input("Thal (0 = normal; 1 = fixed defect; 2 = reversable defect)", min_value=0, max_value=2, value=0)
-            target = st.number_input("Presence of heart disease in the patient (0 = no disease and 1 = disease)", min_value=0, max_value=1, value=0)
-
-        # Create two columns for Data Info and Missing Values
-        col1, col2 = st.columns(2)
-
-        #  first column
-        with col1:
-            # Creating input data array for prediction
-            input_data = np.array([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
-
-            if st.button("Predict"):
-                # Display the input data summary
-                st.subheader("Input Data Summary")
-                input_summary = {
-                    "Name": name if name else "Not Provided",
-                    "Age": age,
-                    "Sex": "Male" if sex == 1 else "Female",
-                    "Chest Pain Type": cp,
-                    "Resting Blood Pressure": trestbps,
-                    "Serum Cholesterol": chol,
-                    "Fasting Blood Sugar > 120 mg/dl": "Yes" if fbs == 1 else "No",
-                    "Resting ECG Results": restecg,
-                    "Max Heart Rate": thalach,
-                    "Exercise Induced Angina": "Yes" if exang == 1 else "No",
-                    "Oldpeak": oldpeak,
-                    "Slope of ST Segment": slope,
-                    "Major Vessels": ca,
-                    "Thal": thal,
-                    "Target": "Heart Disease" if target == 1 else "No Heart Disease"
-                }
-                st.write(input_summary)
-
-                # Prediction
-                prediction = model.predict(input_data)
-                st.subheader("Prediction Result")
-                
-                if prediction[0] == 0:
-                    st.write("The predicted result is: **No Heart Disease**")
-                else:
-                    st.write("The predicted result is: **Heart Disease**")
-
-                # Comparison with the target variable
-                if target == 1 and prediction[0] == 1:
-                    st.write("The patient has heart disease based on input data and model prediction.")
-                elif target == 1 and prediction[0] == 0:
-                    st.write("The patient is predicted not to have heart disease, but the input indicates they have heart disease.")
-                elif target == 0 and prediction[0] == 0:
-                    st.write("The patient is predicted not to have heart disease, which is consistent with the input.")
-                else:
-                    st.write("The patient is predicted to have heart disease, while the input indicates otherwise.")
-            
-
-        # second column
-        with col2:
-            # Interpretation of input data
-            st.write("### Interpretation of Input Data")
-            st.write("""
-                - **Age**: The age of the patient, which can affect heart disease risk.
-                - **Sex**: Gender can influence heart disease prevalence.
-                - **Chest Pain Type**: Different types of chest pain indicate various heart issues.
-                - **Resting Blood Pressure**: High blood pressure can lead to heart disease.
-                - **Serum Cholesterol**: High cholesterol levels can increase heart disease risk.
-                - **Fasting Blood Sugar**: Indicates potential diabetes, a risk factor for heart disease.
-                - **Resting ECG Results**: Reflects heart electrical activity; abnormalities may indicate heart issues.
-                - **Max Heart Rate**: The maximum heart rate achieved during exercise; low levels may indicate heart problems.
-                - **Exercise Induced Angina**: Indicates whether exercise causes chest pain.
-                - **Oldpeak**: Reflects ST depression during exercise; higher values may indicate heart disease.
-                - **Slope of ST Segment**: Indicates heart response to exercise; variations can indicate issues.
-                - **Major Vessels**: The number of vessels colored by fluoroscopy can indicate heart health.
-                - **Thal**: Reflects heart health; different values indicate various defects.
-            """)
-
-
+   
     # Function to load the dataset
     @st.cache_data
     def load_data(uploaded_file):
@@ -980,7 +805,7 @@ elif option == 'Regression Task':
             elif accuracy < 75:
                 st.success("The model has moderate predictive power. It may perform reasonably well.")
             else:
-                st.success("The model has high predictive power. Good job!")
+                st.success("The model has high predictive power.")
 
             # Save and download the model
             model.fit(X, Y)
@@ -1410,4 +1235,626 @@ elif option == 'Regression Task':
 
     if __name__ == "__main__":
         main()
+
+  #prediction      
+elif option == 'Prediction Models':
+    st.title("Heart Disease Prediction Models")
+    st.write("<br>", unsafe_allow_html=True)
+    # Split into Train and Test Sets
+    st.header("K-fold Cross Validation")
+    uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="file_uploader_k")
+
+    if uploaded_file is not None:
+        # Read dataset
+        data = pd.read_csv(uploaded_file)
+
+        # Normalize column names
+        data.columns = data.columns.str.strip().str.lower()
+
+        # Convert columns to numeric, forcing errors to NaN
+        for column in data.columns:
+            data[column] = pd.to_numeric(data[column], errors='coerce')
+
+        # Drop or fill NaN values
+        data.fillna(0, inplace=True)  # Filling NaN with 0, can also choose to drop
+
+        # Preparing the data
+        array = data.values
+        X = array[:, 0:13]  # Features
+        Y = array[:, 13]    # Target variable
+
+        # Show shape of the dataset
+        st.write("#### Shape of the Dataset:")
+        st.write(data.shape)
+
+        # Set the number of splits and test size using sliders
+        st.write("<br>", unsafe_allow_html=True)
+        seed = st.number_input("Set random seed:", min_value=0, value=7)
+        num_splits = st.slider("Number of Random Splits", 1, 20, 5)
+        test_size = st.slider("Test size (as a percentage)", 20, 100, 50, key="slider_random") / 100
+        
+
+        # Set the number of folds for KFold Cross Validation
+        num_folds = st.slider("Select number of folds for KFold Cross Validation:", 2, 10, 5)
+        kfold = KFold(n_splits=num_folds, shuffle=True, random_state=seed)
+
+        accuracies = []
+
+        for _ in range(num_splits):
+            # Split the dataset into test and train for each split
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
+
+            # Train the model
+            model = LogisticRegression(max_iter=210)
+            fold_accuracies = cross_val_score(model, X_train, Y_train, cv=kfold)
+
+            # Store accuracies
+            accuracies.append(fold_accuracies)
+
+        # Calculate mean and standard deviation of the accuracies
+        mean_accuracy = np.mean(accuracies)
+        std_deviation = np.std(accuracies)
+
+        # Display results
+        st.write("<br>", unsafe_allow_html=True)
+        st.subheader("K-fold Cross Validation Results")
+        st.write(f"Accuracy: {mean_accuracy * 100:.3f}%")
+        st.write(f"Standard Deviation: {std_deviation * 100:.3f}%")
+
+        # Save and download the model
+        model.fit(X, Y)
+        model_filename = "Logistic_k_model.joblib"
+        joblib.dump(model, model_filename)
+        st.success(f"Model saved as {model_filename}")
+
+        # Option to download the model
+        with open(model_filename, "rb") as f:
+            st.download_button("Download Model", f, file_name=model_filename)
+
+        # Model upload for prediction
+        st.write("<br>", unsafe_allow_html=True)
+        st.subheader("Upload a Saved Model for Prediction")
+        uploaded_model = st.file_uploader("Upload your model (joblib format)", type=["joblib"], key="file_uploader_kmodel")
+
+        if uploaded_model is not None:
+            model = joblib.load(uploaded_model)  # Load the uploaded model
+
+            # Sample input data for prediction
+            st.write("<br><br>", unsafe_allow_html=True)
+            st.subheader("Input Sample Data")
+            name = st.text_input("Enter your name:", "")
+            age = st.number_input("Age", min_value=0, max_value=120, value=0)
+            sex = st.number_input("Sex (1 = male, 0 = female)", min_value=0, max_value=1, value=0)
+            cp = st.number_input("Chest pain type (0: typical angina, 1: atypical angina, 2: non-anginal pain, 3: asymptomatic)", min_value=0, max_value=3, value=0)
+            trestbps = st.number_input("Resting Blood Pressure (mm Hg) (80-200)", min_value=80, max_value=200, value=120)
+            chol = st.number_input("Serum Cholesterol (mg/dl) (100-600)", min_value=100, max_value=600, value=200)
+            fbs = st.number_input("Fasting Blood Sugar > 120 mg/dl (1 = true, 0 = false)", min_value=0, max_value=1, value=0)
+            restecg = st.number_input("Resting Electrocardiographic Results (0: normal, 1: having ST-T wave abnormality, 2: showing probable or definite left ventricular hypertrophy)", min_value=0, max_value=2, value=0)
+            thalach = st.number_input("Maximum Heart Rate Achieved (60-220)", min_value=60, max_value=220, value=150)
+            exang = st.number_input("Exercise Induced Angina (1 = yes, 0 = no)", min_value=0, max_value=1, value=0)
+            oldpeak = st.number_input("ST depression induced by exercise relative to rest (0.0-7.0)", min_value=0.0, max_value=7.0, value=0.0)
+            slope = st.number_input("Slope of the peak exercise ST segment (0: upsloping, 1: flat, 2: downsloping)", min_value=0, max_value=2, value=0)
+            ca = st.number_input("Number of major vessels (0-3) colored by fluoroscopy", min_value=0, max_value=3, value=0)
+            thal = st.number_input("Thal (0 = normal; 1 = fixed defect; 2 = reversible defect)", min_value=0, max_value=2, value=0)
+            target = st.number_input("Presence of heart disease in the patient (0 = no disease and 1 = disease)", min_value=0, max_value=1, value=0)
+
+            # Creating input data array for prediction (ensure correct number of features)
+            input_data = np.array([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
+
+            if st.button("Predict"):
+                # Display the input data summary
+                st.subheader("Input Data Summary")
+                input_summary = {
+                    "Name": name if name else "Not Provided",
+                    "Age": age,
+                    "Sex": "Male" if sex == 1 else "Female",
+                    "Chest Pain Type": cp,
+                    "Resting Blood Pressure": trestbps,
+                    "Serum Cholesterol": chol,
+                    "Fasting Blood Sugar > 120 mg/dl": "Yes" if fbs == 1 else "No",
+                    "Resting ECG Results": restecg,
+                    "Max Heart Rate": thalach,
+                    "Exercise Induced Angina": "Yes" if exang == 1 else "No",
+                    "Oldpeak": oldpeak,
+                    "Slope of ST Segment": slope,
+                    "Major Vessels": ca,
+                    "Thal": thal,
+                    "Target": "Heart Disease" if target == 1 else "No Heart Disease"
+                }
+                st.write(input_summary)
+
+                # Prediction
+                prediction = model.predict(input_data)
+                st.write("<br>", unsafe_allow_html=True)
+                st.subheader("Prediction Result")
+                
+                if prediction[0] == 0:
+                    st.write("The predicted result is: **No Heart Disease**")
+                else:
+                    st.write("The predicted result is: **Heart Disease**")
+
+                # Comparison with the target variable
+                if target == 1 and prediction[0] == 1:
+                    st.write("The patient has heart disease based on input data and model prediction.")
+                elif target == 1 and prediction[0] == 0:
+                    st.write("The patient is predicted not to have heart disease, but the input indicates they have heart disease.")
+                elif target == 0 and prediction[0] == 0:
+                    st.write("The patient is predicted not to have heart disease, which is consistent with the input.")
+                else:
+                    st.write("The patient is predicted to have heart disease, while the input indicates otherwise.")
+
+            # Interpretation of input data
+            st.write("<br>", unsafe_allow_html=True)
+            st.write("#### Interpretation of Input Data")
+            st.write("""
+                - **Age**: The age of the patient, which can affect heart disease risk.
+                - **Sex**: Gender can influence heart disease prevalence.
+                - **Chest Pain Type**: Different types of chest pain indicate various heart issues.
+                - **Resting Blood Pressure**: High blood pressure can lead to heart disease.
+                - **Serum Cholesterol**: High cholesterol levels can increase heart disease risk.
+                - **Fasting Blood Sugar**: Indicates potential diabetes, a risk factor for heart disease.
+                - **Resting ECG Results**: Abnormalities can signify heart problems.
+                - **Max Heart Rate**: Low maximum heart rate can indicate heart issues.
+                - **Exercise Induced Angina**: Pain during exercise is a risk factor.
+                - **Oldpeak**: Indicates heart strain during exercise.
+                - **Slope of ST Segment**: Changes in ST segment can indicate heart issues.
+                - **Major Vessels**: Number of colored vessels can show heart disease severity.
+                - **Thal**: Indicates the type of heart defect.
+                - **Target**: The actual outcome of heart disease.
+            """)
+
+
+    st.write("<br><br>", unsafe_allow_html=True)
+    st.header("Leave-One-Out Cross Validation")
+
+    def load_data(uploaded_file):
+        return pd.read_csv(uploaded_file)
+
+    # File uploader for dataset
+    uploaded_file = st.file_uploader("Upload your CSV dataset", type="csv", key="file_uploader_l")
+
+    if uploaded_file is not None:
+        # Load dataset
+        data = load_data(uploaded_file)
+
+        # Normalize column names
+        data.columns = data.columns.str.strip().str.lower()  # Lowercase and strip whitespace
+
+        # Check for any non-numeric columns
+        non_numeric_cols = data.select_dtypes(include=['object']).columns
+        if len(non_numeric_cols) > 0:
+            st.write(f"Non-numeric columns found: {non_numeric_cols}. Please ensure only numeric data is used for model training.")
+
+        # Ensure columns
+        if len(data.columns) < 5:  # Ensure at least 5 columns
+            st.error("The dataset must have at least 5 columns.")
+        else:
+            # Split into input and output variables
+            array = data.values
+            X = array[:, :-1]  # Features (all columns except the last)
+            Y = array[:, -1]   # Target (last column)
+
+            st.write("### Shape of the Dataset:")
+            st.write(data.shape)  # Show the shape of the dataset
+
+            # Perform Leave-One-Out Cross Validation
+            loocv = LeaveOneOut()
+            model = LogisticRegression(max_iter=500)
+
+            # Evaluate using LOOCV with progress bar
+            #with st.spinner("Evaluating the model..."):
+            results = cross_val_score(model, X, Y, cv=loocv)
+
+            # Display results
+            st.subheader("Leave-One-Out Cross-Validation Results")
+            st.write(f"Accuracy: {results.mean() * 100:.3f}%")
+            st.write(f"Standard Deviation: {results.std() * 100:.3f}%")
+
+            # Interpretation of the accuracy
+            avg_accuracy = results.mean() * 100  # Convert to percentage
+            if avg_accuracy < 20:
+                st.success("The model has high predictive power.")
+            elif avg_accuracy < 50:
+                st.warning("The model has moderate predictive power. It may perform reasonably well.")
+            elif avg_accuracy < 100:
+                st.warning("The model has low predictive power. Consider gathering more data or using different features.")
+            else:
+                st.warning("The model's performance is poor. Please check your data for quality and relevance.")
+
+            # Save and download the model
+            model.fit(X, Y)  # Fit the model
+            model_filename = "Logistic_lmodel.joblib"
+            joblib.dump(model, model_filename)
+            st.success(f"Model saved as {model_filename}")
+
+            # Option to download the model
+            with open(model_filename, "rb") as f:
+                st.download_button("Download Model", f, file_name=model_filename, key='buttonl')
+
+        # Model upload for prediction
+        st.write("<br>", unsafe_allow_html=True)
+        st.subheader("Upload a Saved Model for Prediction")
+        uploaded_model = st.file_uploader("Upload your model (joblib format)", type=["joblib"], key="file_uploader_lmodel")
+
+        if uploaded_model is not None:
+            model = joblib.load(uploaded_model)  # Load the uploaded model
+
+            # Sample input data for prediction
+            st.write("<br><br>", unsafe_allow_html=True)
+            st.subheader("Input Sample Data")
+            name = st.text_input("Enter your name:", "", key='namel')
+            age = st.number_input("Age", min_value=0, max_value=120, value=0, key='agel')
+            sex = st.number_input("Sex (1 = male, 0 = female)", min_value=0, max_value=1, value=0, key='sexl')
+            cp = st.number_input("Chest pain type (0: typical angina, 1: atypical angina, 2: non-anginal pain, 3: asymptomatic)", min_value=0, max_value=3, value=0, key='cpl')
+            trestbps = st.number_input("Resting Blood Pressure (mm Hg) (80-200)", min_value=80, max_value=200, value=120, key='tretbpsl')
+            chol = st.number_input("Serum Cholesterol (mg/dl) (100-600)", min_value=100, max_value=600, value=200, key='choll')
+            fbs = st.number_input("Fasting Blood Sugar > 120 mg/dl (1 = true, 0 = false)", min_value=0, max_value=1, value=0, key='fbsl')
+            restecg = st.number_input("Resting Electrocardiographic Results (0: normal, 1: having ST-T wave abnormality, 2: showing probable or definite left ventricular hypertrophy)", min_value=0, max_value=2, value=0, key='restecgl')
+            thalach = st.number_input("Maximum Heart Rate Achieved (60-220)", min_value=60, max_value=220, value=150, key='thalachl')
+            exang = st.number_input("Exercise Induced Angina (1 = yes, 0 = no)", min_value=0, max_value=1, value=0, key='exangl')
+            oldpeak = st.number_input("ST depression induced by exercise relative to rest (0.0-7.0)", min_value=0.0, max_value=7.0, value=0.0, key='oldpeakl')
+            slope = st.number_input("Slope of the peak exercise ST segment (0: upsloping, 1: flat, 2: downsloping)", min_value=0, max_value=2, value=0, key='slopel')
+            ca = st.number_input("Number of major vessels (0-3) colored by fluoroscopy", min_value=0, max_value=3, value=0, key='cal')
+            thal = st.number_input("Thal (0 = normal; 1 = fixed defect; 2 = reversible defect)", min_value=0, max_value=2, value=0, key='thall')
+            target = st.number_input("Presence of heart disease in the patient (0 = no disease and 1 = disease)", min_value=0, max_value=1, value=0, key='targetl')
+
+            # Creating input data array for prediction (ensure correct number of features)
+            input_data = np.array([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
+
+            if st.button("Predict",key='buttonpl'):
+                # Display the input data summary
+                st.subheader("Input Data Summary")
+                input_summary = {
+                    "Name": name if name else "Not Provided",
+                    "Age": age,
+                    "Sex": "Male" if sex == 1 else "Female",
+                    "Chest Pain Type": cp,
+                    "Resting Blood Pressure": trestbps,
+                    "Serum Cholesterol": chol,
+                    "Fasting Blood Sugar > 120 mg/dl": "Yes" if fbs == 1 else "No",
+                    "Resting ECG Results": restecg,
+                    "Max Heart Rate": thalach,
+                    "Exercise Induced Angina": "Yes" if exang == 1 else "No",
+                    "Oldpeak": oldpeak,
+                    "Slope of ST Segment": slope,
+                    "Major Vessels": ca,
+                    "Thal": thal,
+                    "Target": "Heart Disease" if target == 1 else "No Heart Disease"
+                }
+                st.write(input_summary)
+
+                # Prediction
+                prediction = model.predict(input_data)
+                st.write("<br>", unsafe_allow_html=True)
+                st.subheader("Prediction Result")
+
+                if prediction[0] == 0:
+                    st.write("The predicted result is: **No Heart Disease**")
+                else:
+                    st.write("The predicted result is: **Heart Disease**")
+
+                # Comparison with the target variable
+                if target == 1 and prediction[0] == 1:
+                    st.write("The patient has heart disease based on input data and model prediction.")
+                elif target == 1 and prediction[0] == 0:
+                    st.write("The patient is predicted not to have heart disease, but the input indicates they have heart disease.")
+                elif target == 0 and prediction[0] == 0:
+                    st.write("The patient is predicted not to have heart disease, which is consistent with the input.")
+                else:
+                    st.write("The patient is predicted to have heart disease, while the input indicates otherwise.")
+
+    st.write("<br><br>", unsafe_allow_html=True)
+
+    st.title("Climate Prediction Models")  
+    st.write("<br>", unsafe_allow_html=True)  
+    # Split into Train and Test Sets
+    st.header("Split into Train and Test Sets")
+
+    # File uploader for dataset
+    uploaded_file = st.file_uploader("Upload your CSV dataset", type="csv", key="file_uploader_split")
+
+    if uploaded_file is not None:
+        # Read dataset
+        data = pd.read_csv(uploaded_file)
+
+        # Normalize column names
+        data.columns = data.columns.str.strip().str.lower()  # Lowercase and strip whitespace
+
+        #st.write("### Dataset Preview:")
+        #st.write(data.head())  # Show the first few rows of the dataset
+
+        #st.write("### Correlation Matrix:")
+        #st.write(data.corr())
+
+        # Check for any non-numeric columns
+        non_numeric_cols = data.select_dtypes(include=['object']).columns
+        if len(non_numeric_cols) > 0:
+            st.write(f"Non-numeric columns found: {non_numeric_cols}. Please ensure only numeric data is used for model training.")
+
+        # Ensure columns
+        if len(data.columns) < 5:  # Change from 11 to 5
+            st.error("The dataset must have at least 5 columns.")
+        else:
+            # Split into input and output variables
+            array = data.values
+            X = array[:, 0:9]  
+            Y = array[:, 9]   
+
+            st.write("### Shape of the Dataset:")
+            st.write(data.shape)  # This will show you how many rows and columns are in your dataset
+            st.write("<br>", unsafe_allow_html=True)
+
+            # Set the test size using a slider
+            test_size = st.slider("Test size (as a percentage)", 20, 100, 50,key="slider_split") / 100
+            seed = 7
+
+            # Split the dataset into test and train
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
+
+            # Train the data on a Linear Regression model
+            model = LinearRegression()
+            model.fit(X_train, Y_train)
+
+            # Evaluate the accuracy
+            result = model.score(X_test, Y_test)
+            accuracy = result * 100
+            st.write("<br>", unsafe_allow_html=True)
+            st.subheader("Split into Train and Test Sets Results")
+            st.write(f"Accuracy: {accuracy:.3f}%")
+
+            # Interpretation of the accuracy
+            if accuracy < 0:
+                st.warning("The model's performance is poor. Please check your data for quality and relevance.")
+            elif accuracy < 50:
+                st.warning("The model has low predictive power. Consider gathering more data or using different features.")
+            elif accuracy < 75:
+                st.success("The model has moderate predictive power. It may perform reasonably well.")
+            else:
+                st.success("The model has high predictive power.")
+
+            # Save and download the model
+            model.fit(X, Y)
+            model_filename = "Linear_split_model.joblib"
+            joblib.dump(model, model_filename)
+            st.success(f"Model saved as {model_filename}")
+
+            # Option to download the model
+            with open(model_filename, "rb") as f:
+                st.download_button("Download Model", f, file_name=model_filename)
+
+        # Model upload for prediction
+        st.write("<br>", unsafe_allow_html=True)
+        st.subheader("Upload a Saved Model for Prediction")
+        uploaded_model = st.file_uploader("Upload your model (joblib format)", type=["joblib"], key="file_uploader_splitmodel")
+
+        if uploaded_model is not None:
+            model = joblib.load(uploaded_model)  # Load the uploaded model
+
+            # Sample input data for prediction
+            st.write("<br>", unsafe_allow_html=True)
+            st.subheader("Input Sample Data")
+            temp = st.number_input("Temperature (0 to 50 Celsius)", min_value=-50, max_value=50, value=0, key="temps")  
+            hum = st.number_input("Humidity (1-100%)", min_value=0, max_value=100, value=0, key="humrs")  
+            wind = st.number_input("Wind Speed (0-20)", min_value=0, max_value=20, value=0, key="windrs")  
+            pres = st.number_input("Pressure (1-100%)", min_value=1, max_value=100, value=30, key="press")  
+            heat = st.number_input("Heat Index (0 to 70 Celsius)", min_value=0, max_value=70, value=0, key="heats")  
+            dew = st.number_input("Dew Point (0 to 30 Celsius)", min_value=0, max_value=30, value=0, key="dews"  )
+            chill = st.number_input("Wind Chill Index (0-100)", min_value=0, max_value=100, value=0, key="chills")  
+            temphum = st.number_input("Comfort Level (0-Normal, 1-Fair, 2-Uncomfortable, 3-Hot, 4-Cold )", min_value=0, max_value=4, value=0, key="temphums")  
+            humwind = st.number_input("Air Level(0-Calm, 1-Breezy, 2-Windy, 3-Strong Wind, 4-Gale )", min_value=0, max_value=4, value=0, key="humwinds")
+            events = st.number_input("Weather Event (1-Event Occurred or 0-No Event)", min_value=0, max_value=1, value=0, key="eventss")  
+
+            # Creating input data array for prediction (ensure correct number of features)
+            input_data = np.array([[temp, hum, wind, pres, heat, dew, chill, temphum, humwind]])
+
+            if st.button("Predict", key="splitbutton"  ):
+                # Display the input data summary
+                st.write("<br>", unsafe_allow_html=True)
+                st.subheader("Input Data Summary")
+                input_summary = {
+                    "Temperature (0 to 50 Celsius)": temp,
+                    "Humidity (1-100%)": hum,
+                    "Wind Speed (0-20)": wind,
+                    "Pressure Pressure (1-100%)": pres,
+                    "Heat Index (0 to 70 Celsius)": heat,
+                    "Dew Point (1-100%)": dew,
+                    "Wind Chill Index (0-100)": chill,
+                    "Comfort Level (0-Normal, 1-Fair, 2-Uncomfortable, 3-Hot, 4-Cold )": temphum,
+                    "Air Level(0-Calm, 1-Breezy, 2-Windy, 3-Strong Wind, 4-Gale )": humwind,
+                    "Weather Event (1-Event Occurred or 0-No Event)": events,
+                }
+                st.write(input_summary)
+
+                # Prediction
+                prediction = model.predict(input_data)
+                st.write("<br>", unsafe_allow_html=True)
+                st.subheader("Prediction Result")
+                
+                # Display prediction based on the model's output
+                st.write(f"The predicted climate metric is: **{prediction[0]:.3f}**")
+
+                # Interpretation based on prediction value
+                if prediction[0] < 0:
+                    interpretation = "The climate conditions seem stable. No immediate climate anomalies predicted."
+                elif 0 <= prediction[0] < 10:
+                    interpretation = "There might be slight climate variations or mild changes. Monitor conditions regularly."
+                elif 10 <= prediction[0] < 20:
+                    interpretation = "Moderate climate variations predicted. Potential for changes in weather patterns or events."
+                elif 20 <= prediction[0] < 30:
+                    interpretation = "Significant climate changes predicted. Possible risk of extreme weather events. Stay alert."
+                else:
+                    interpretation = "Severe climate anomalies predicted. High chance of extreme weather conditions or environmental impacts."
+
+                st.write(interpretation)
+                st.write("<br>", unsafe_allow_html=True)
+
+                st.write("""
+                ### Prediction Guide:
+                - **Below 0**: Climate conditions are stable, no notable changes.
+                - **0 to 10**: Mild climate changes, typically not alarming.
+                - **10 to 20**: Moderate changes, potential for weather pattern shifts or unusual events.
+                - **20 to 30**: Significant changes, likely to experience abnormal weather patterns or environmental stress.
+                - **Above 30**: Severe changes, strong potential for extreme weather events or serious environmental impacts.
+                """)
+    st.write("<br><br>", unsafe_allow_html=True)
+    st.header("Repeated Random Train-Test Splits")
+
+    # File uploader for dataset
+    uploaded_file = st.file_uploader("Upload your CSV dataset", type="csv", key="file_uploader_random")
+
+    if uploaded_file is not None:
+        # Read dataset
+        data = pd.read_csv(uploaded_file)
+
+        # Normalize column names
+        data.columns = data.columns.str.strip().str.lower()  # Lowercase and strip whitespace
+
+        #st.write("### Dataset Preview:")
+        #st.write(data.head())  # Show the first few rows of the dataset
+
+        #st.write("### Correlation Matrix:")
+        #st.write(data.corr())
+
+        # Check for any non-numeric columns
+        non_numeric_cols = data.select_dtypes(include=['object']).columns
+        if len(non_numeric_cols) > 0:
+            st.write(f"Non-numeric columns found: {non_numeric_cols}. Please ensure only numeric data is used for model training.")
+
+        # Ensure columns
+        if len(data.columns) < 5:  # Change from 11 to 5
+            st.error("The dataset must have at least 5 columns.")
+        else:
+            # Split into input and output variables
+            array = data.values
+            X = array[:, 0:9]  # Features (first 9 columns)
+            Y = array[:, 9]    # Target (10th column)
+
+            st.write("### Shape of the Dataset:")
+            st.write(data.shape)  # Show how many rows and columns are in your dataset
+            st.write("<br>", unsafe_allow_html=True)
+
+            # Set the number of splits and test size using sliders
+            num_splits = st.slider("Number of Random Splits", 1, 20, 5)  # Random splits from 1 to 20 times
+            test_size = st.slider("Test size (as a percentage)", 20, 100, 50, key="slider_random") / 100
+            seed = st.number_input("Set random seed:", min_value=0, value=7)
+
+            accuracies = []
+            shuffle_split = ShuffleSplit(n_splits=num_splits, test_size=test_size, random_state=seed)
+
+            for _ in range(num_splits):
+                # Split the dataset into test and train for each split
+                X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=None)
+
+                # Train the data on a Linear Regression model
+                model = LinearRegression()
+                model.fit(X_train, Y_train)
+
+                # Evaluate the accuracy
+                Y_pred = model.predict(X_test)
+                accuracy = mean_squared_error(Y_test, Y_pred)
+                accuracies.append(accuracy)
+                results = cross_val_score(model, X, Y, cv=shuffle_split)
+
+            # Calculate average accuracy over all splits
+            avg_accuracy = np.mean(accuracies)
+            st.subheader("Repeated Random Train-Test Splits Results")
+            st.write("<br>", unsafe_allow_html=True)
+            st.write(f"Average Mean Squared Error (MSE) over {num_splits} splits: {avg_accuracy:.3f}")
+            st.write(f"Accuracy: {results.mean()*100:.3f}%")
+            st.write(f"Standard Deviation: {results.std()*100:.3f}%")
+
+            # Interpretation of the MSE
+            if avg_accuracy > 100:
+                st.warning("The model's performance is poor. Please check your data for quality and relevance.")
+            elif avg_accuracy > 50:
+                st.warning("The model has low predictive power. Consider gathering more data or using different features.")
+            elif avg_accuracy > 20:
+                st.success("The model has moderate predictive power. It may perform reasonably well.")
+            else:
+                st.success("The model has high predictive power.")
+
+            # Save and download the model
+            model.fit(X, Y)
+            model_filename = "Linear_random_model.joblib"
+            joblib.dump(model, model_filename)
+            st.success(f"Model saved as {model_filename}")
+
+            # Option to download the model
+            with open(model_filename, "rb") as f:
+                st.download_button("Download Model", f, file_name=model_filename)
+
+        # Model upload for prediction
+        st.write("<br>", unsafe_allow_html=True)
+        st.subheader("Upload a Saved Model for Prediction")
+        uploaded_model = st.file_uploader("Upload your model (joblib format)", type=["joblib"], key="file_uploader_randommodel")
+
+        if uploaded_model is not None:
+            model = joblib.load(uploaded_model)  # Load the uploaded model
+
+            # Sample input data for prediction
+            st.write("<br>", unsafe_allow_html=True)
+            st.subheader("Input Sample Data")
+            temp = st.number_input("Temperature (0 to 50 Celsius)", min_value=-50, max_value=50, value=0, key="tempr")  
+            hum = st.number_input("Humidity (1-100%)", min_value=0, max_value=100, value=0, key="humr")  
+            wind = st.number_input("Wind Speed (0-20)", min_value=0, max_value=20, value=0, key="windr")  
+            pres = st.number_input("Pressure (1-100%)", min_value=1, max_value=100, value=30, key="presr")  
+            heat = st.number_input("Heat Index (0 to 70 Celsius)", min_value=0, max_value=70, value=0, key="heatr")  
+            dew = st.number_input("Dew Point (0 to 30 Celsius)", min_value=0, max_value=30, value=0, key="dewr"  )
+            chill = st.number_input("Wind Chill Index (0-100)", min_value=0, max_value=100, value=0, key="chillr")  
+            temphum = st.number_input("Comfort Level (0-Normal, 1-Fair, 2-Uncomfortable, 3-Hot, 4-Cold )", min_value=0, max_value=4, value=0, key="temphumr")  
+            humwind = st.number_input("Air Level(0-Calm, 1-Breezy, 2-Windy, 3-Strong Wind, 4-Gale )", min_value=0, max_value=4, value=0, key="humwindr")
+            events = st.number_input("Weather Event (1-Event Occurred or 0-No Event)", min_value=0, max_value=1, value=0, key="eventsr")  
+
+            # Creating input data array for prediction (ensure correct number of features)
+            input_data = np.array([[temp, hum, wind, pres, heat, dew, chill, temphum, humwind]])
+
+            if st.button("Predict", key="randombutton"  ):
+                # Display the input data summary
+                st.write("<br>", unsafe_allow_html=True)
+                st.subheader("Input Data Summary")
+                input_summary = {
+                    "Temperature (0 to 50 Celsius)": temp,
+                    "Humidity (1-100%)": hum,
+                    "Wind Speed (0-20)": wind,
+                    "Pressure (1-100%)": pres,
+                    "Heat Index (0 to 70 Celsius)": heat,
+                    "Dew Point (0-30 Celsius)": dew,
+                    "Wind Chill Index (0-100)": chill,
+                    "Comfort Level (0-Normal, 1-Fair, 2-Uncomfortable, 3-Hot, 4-Cold )": temphum,
+                    "Air Level(0-Calm, 1-Breezy, 2-Windy, 3-Strong Wind, 4-Gale )": humwind,
+                    "Weather Event (1-Event Occurred or 0-No Event)": events,
+                }
+                st.write(input_summary)
+
+                # Prediction
+                prediction = model.predict(input_data)
+                st.write("<br>", unsafe_allow_html=True)
+                st.subheader("Prediction Result")
+                
+                # Display prediction based on the model's output
+                st.write(f"The predicted climate metric is: **{prediction[0]:.3f}**")
+
+                # Interpretation based on prediction value
+                if prediction[0] < 0:
+                    interpretation = "The climate conditions seem stable. No immediate climate anomalies predicted."
+                elif 0 <= prediction[0] < 10:
+                    interpretation = "There might be slight climate variations or mild changes. Monitor conditions regularly."
+                elif 10 <= prediction[0] < 20:
+                    interpretation = "Moderate climate variations predicted. Potential for changes in weather patterns or events."
+                elif 20 <= prediction[0] < 30:
+                    interpretation = "Significant climate changes predicted. Possible risk of extreme weather events. Stay alert."
+                else:
+                    interpretation = "Severe climate anomalies predicted. High chance of extreme weather conditions or environmental impacts."
+
+                st.write(interpretation)
+                st.write("<br>", unsafe_allow_html=True)
+                st.write("""
+                ### Prediction Guide:
+                - **Below 0**: Climate conditions are stable, no notable changes.
+                - **0 to 10**: Mild climate changes, typically not alarming.
+                - **10 to 20**: Moderate changes, potential for weather pattern shifts or unusual events.
+                - **20 to 30**: Significant changes, likely to experience abnormal weather patterns or environmental stress.
+                - **Above 30**: Severe changes, strong potential for extreme weather events or serious environmental impacts.
+                """)
+
  #macala normailah itd105 it4d
