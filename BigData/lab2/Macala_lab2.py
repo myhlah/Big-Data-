@@ -475,19 +475,11 @@ if option == 'Classification Task':
                 st.write("The dataset contains missing values. Please clean your data.")
                 return
 
-            # Display data types
-            #st.write("Data types in the dataset:")
-            #st.write(dataframe.dtypes)
-
             # Convert categorical features to numeric if necessary
             categorical_cols = dataframe.select_dtypes(include=['object']).columns.tolist()
             for col in categorical_cols:
                 le = LabelEncoder()
                 dataframe[col] = le.fit_transform(dataframe[col])
-
-            # Ensure all features are numeric
-            #st.write("Data types after encoding:")
-            #st.write(dataframe.dtypes)
 
             # Display first few rows of the dataset
             st.subheader("Dataset Preview")
@@ -695,6 +687,7 @@ if option == 'Classification Task':
             matrix = confusion_matrix(Y_test, predicted)
 
             # Plot the confusion matrix
+            st.subheader("Confusion Matrix")
             fig, ax = plt.subplots()
             disp = ConfusionMatrixDisplay(confusion_matrix=matrix)
             disp.plot(cmap=plt.cm.Blues, ax=ax)
@@ -791,19 +784,9 @@ if option == 'Classification Task':
             report = classification_report(Y_test, predicted, output_dict=True)
             st.subheader("Classification Report")
             
-            # Create two columns for Data Info and Missing Values
-            col1, col2 = st.columns(2)
-
-            #  first column
-            with col1:
-                
-                st.text(classification_report(Y_test, predicted))  # Display as text
-
-            # second column
-            with col2:
-                # Optionally, display the report as a DataFrame
-                report_df = pd.DataFrame(report).transpose()
-                st.write(report_df)
+            # Optionally, display the report as a DataFrame
+            report_df = pd.DataFrame(report).transpose()
+            st.write(report_df)
             # Interpretation of the classification report
             st.subheader("Interpretation of the Classification Report")
             st.write("""
@@ -901,20 +884,20 @@ if option == 'Classification Task':
 
             # Interpretation and guide
             st.write("### Interpretation of Results")
-            st.write("The ROC curve (Receiver Operating Characteristic curve) is a graphical representation of the performance of a binary classifier system as its discrimination threshold is varied.")
+            st.write("The ROC curve (Receiver Operating Characteristic curve) is a graphical representation of the performance of a binary or multiclass classifier system as its discrimination threshold is varied.")
             st.write("It plots the True Positive Rate (TPR) against the False Positive Rate (FPR).")
             
             # Create two columns for Data Info and Missing Values
             col1, col2 = st.columns(2)
 
-            #  first column
+            # First column
             with col1:
                 st.write("**Key Terms:**")
                 st.write("- **True Positive Rate (TPR)**: Also known as sensitivity or recall, it represents the proportion of actual positives that are correctly identified.")
                 st.write("- **False Positive Rate (FPR)**: Represents the proportion of actual negatives that are incorrectly identified as positives.")
                 st.write("The area under the ROC curve (AUC) is a single scalar value that summarizes the performance of the model.")
             
-            # second column
+            # Second column
             with col2:
                 st.write("**Interpretation of AUC values:**")
                 st.write("- **AUC = 1.0**: Perfect model with no false positives or false negatives.")
@@ -986,6 +969,7 @@ elif option == 'Regression Task':
             # Evaluate the accuracy
             result = model.score(X_test, Y_test)
             accuracy = result * 100
+            st.subheader("Split into Train and Test Sets Results")
             st.write(f"Accuracy: {accuracy:.3f}%")
 
             # Interpretation of the accuracy
@@ -1150,25 +1134,44 @@ elif option == 'Regression Task':
             st.write(f"Accuracy: {mean_accuracy:.3f}%")
             st.write(f"Standard Deviation: {std_deviation:.3f}%")
 
-            # Interpretation and Guide
-            st.subheader("Interpretation and Guide")
-
+            # Interpretation 
+            st.subheader("Interpretation")
+        
             # Accuracy interpretation
             if mean_accuracy > 0.8:
-                st.write("- The model has a **high accuracy** with a value of {mean_accuracy:.3f}. This means that the model explains a significant portion of the variance in the target variable.")
+                st.write(f"- The model has a **high accuracy** with a value of {mean_accuracy:.3f}. This means that the model explains a significant portion of the variance in the target variable.")
             elif 0.5 <= mean_accuracy <= 0.8:
-                st.write("- The model has a **moderate accuracy** with a value of {mean_accuracy:.3f}. The model is reasonably good but could be improved with feature engineering or a different model.")
+                st.write(f"- The model has a **moderate accuracy** with a value of {mean_accuracy:.3f}. The model is reasonably good but could be improved with feature engineering or a different model.")
             else:
-                st.write("- The model has a **low accuracy** with a value of {mean_accuracy:.3f}. The model is not adequately explaining the variance in the target variable. Consider improving the dataset or trying a different approach.")
+                st.write(f"- The model has a **low accuracy** with a value of {mean_accuracy:.3f}. The model is not adequately explaining the variance in the target variable. Consider improving the dataset or trying a different approach.")
 
             # Standard deviation interpretation
             if std_deviation < 0.05:
-                st.write("- The model is **highly consistent** across splits, as indicated by the low standard deviation of {std_deviation:.3f}. This means the model's performance is stable across different train-test splits.")
+                st.write(f"- The model is **highly consistent** across splits, as indicated by the low standard deviation of {std_deviation:.3f}. This means the model's performance is stable across different train-test splits.")
             elif 0.05 <= std_deviation <= 0.15:
-                st.write("- The model is **moderately consistent** with a standard deviation of {std_deviation:.3f}. There is some variation in model performance across different splits, but it is still acceptable.")
+                st.write(f"- The model is **moderately consistent** with a standard deviation of {std_deviation:.3f}. There is some variation in model performance across different splits, but it is still acceptable.")
             else:
-                st.write("- The model is **inconsistent** with a high standard deviation of {std_deviation:.3f}. The model's performance varies significantly across different splits. Consider revisiting the model or dataset.")
+                st.write(f"- The model is **inconsistent** with a high standard deviation of {std_deviation:.3f}. The model's performance varies significantly across different splits. Consider revisiting the model or dataset.")
 
+             # Interpretation 
+            st.subheader("Guide")
+            
+             # Create two columns for Data Info and Missing Values
+            col1, col2 = st.columns(2)
+           
+            #  first column
+            with col1:
+                st.write("**Accuraccy**")
+                st.write("  - 0.8 to 1.0 indicates a strong model performance.")
+                st.write("  - 0.5 to 0.8 suggests that the model is performing adequately but may require further refinement.")
+                st.write("  - 0.0 to 0.5 indicates poor model performance and potential overfitting or underfitting.")
+
+            # second column
+            with col2:
+                st.write("**Standard Dveiation**")
+                st.write("  - Less than 0.05 suggests very little variability in performance.")
+                st.write("  - 0.05 to 0.15 indicates moderate variability in performance, which is generally acceptable for many models.")
+                st.write("  - Greater than 0.15 suggests significant variability, which may indicate that the model is not robust across different samples.")
         else:
             st.write("Please upload a CSV file to proceed.")
 
@@ -1390,18 +1393,17 @@ elif option == 'Regression Task':
 
             # Interpretation and guidance
             st.subheader("Interpretation of Results")
-            st.write(
-                """
-                The R² (R-squared) score is a statistical measure that represents the proportion of variance for a dependent variable that's explained by independent variables in a regression model. 
+            st.write("""
+            The R² (R-squared) score is a statistical measure that represents the proportion of variance for a dependent variable that's explained by independent variables in a regression model. 
 
-                Here's how to interpret the R² score:
-                - **R² = 1:** Perfect model; it explains 100% of the variability in the target variable.
-                - **0.7 ≤ R² < 1:** Good model performance; a significant portion of the variance is explained by the model.
-                - **0.3 ≤ R² < 0.7:** Moderate model performance; the model explains some variance but may be improved.
-                - **R² < 0.3:** Poor model performance; the model explains very little variance, indicating that it may not be suitable for the data.
+            Here's how to interpret the R² score:
+            - **R² = 1:** Perfect model; it explains 100% of the variability in the target variable.
+            - **0.7 ≤ R² < 1:** Good model performance; a significant portion of the variance is explained by the model.
+            - **0.3 ≤ R² < 0.7:** Moderate model performance; the model explains some variance but may be improved.
+            - **R² < 0.3:** Poor model performance; the model explains very little variance, indicating that it may not be suitable for the data.
 
             Keep in mind that a higher R² value does not always mean the model is better. It's essential to validate the model's performance using other metrics and visualizations.
-                """
+            """
             )
         else:
             st.write("Please upload a CSV file to proceed.")
