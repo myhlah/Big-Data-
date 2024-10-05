@@ -1,0 +1,46 @@
+Heart Disease Prediction Model
+Features:
+
+age - Age: The age of the individual in years.
+
+sex - Sex: The gender of the individual (1 = male, 0 = female).
+
+CP - Chest Pain Type: Indicates the type of chest pain experienced:
+    0: Typical angina (chest pain related to the heart)
+    1: Atypical angina
+    2: Non-anginal pain
+    3: Asymptomatic
+
+trestbps - Resting Blood Pressure: The individual’s blood pressure (mmHg) measured during rest.
+
+chol - Serum Cholesterol: Cholesterol level in mg/dL.
+
+fbs - Fasting Blood Sugar: Indicates whether fasting blood sugar is above 120 mg/dL (1 = true, 0 = false).
+
+restecg - Resting Electrocardiographic Results: Results from a resting electrocardiogram:
+    0: Normal
+    1: ST-T wave abnormality
+    2: Possible or definite left ventricular hypertrophy
+
+thalach - Max Heart Rate Achieved: The maximum heart rate achieved during exercise.
+
+exang - Exercise-Induced Angina: Whether or not the individual experiences angina (chest pain) due to exercise (1 = yes, 0 = no).
+
+oldpeak - ST Depression: The amount of ST depression induced by exercise relative to rest, a measure of heart stress.
+
+slope - Slope of ST Segment: The slope of the peak exercise ST segment:
+    0: Upsloping
+    1: Flat
+    2: Downsloping
+
+ca - Number of Major Vessels: The number of major blood vessels (0-3) colored by fluoroscopy.
+
+thal - Thalassemia: A blood disorder:
+    0 = normal
+    1 = fixed defect
+    2 = reversible defect
+
+target - Heart Disease:
+    0: indicates its absence.
+    1: indicates the presence of heart disease
+    
