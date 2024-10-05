@@ -1,0 +1,42 @@
+Climate Prediction Model
+Features:
+
+temp - Temperature (°C): The ambient air temperature, ranging from 0°C to 50°C.    
+                  Higher temperatures might indicate warmer or hot conditions.
+
+hum - Humidity (%): The amount of moisture in the air, ranging from 1% to 100%.
+            High humidity values indicate more moisture, making conditions feel warmer or muggy.
+
+wind - Wind Speed: The speed of wind, ranging from 0 to 20 (units could be km/h or mph).
+            Higher values indicate stronger winds.
+
+pres - Pressure (%): Atmospheric pressure, ranging from 1% to 100%.
+              Lower pressure values often signal stormy weather.
+
+heat - Heat Index (°C): The "feels like" temperature considering both temperature and humidity, ranging from 0°C to 70°C.
+                 High heat index indicates discomfort due to high temperature and humidity.
+
+dew - Dew Point (%): The temperature at which air becomes saturated and moisture condenses, ranging from 1% to 100%.
+               A higher dew point typically indicates more humid conditions.
+
+chill - Wind Chill Index: A measure of how cold it feels when wind is taken into account, ranging from 0 to 100.
+                  Higher wind chill values indicate colder perceived temperatures.
+
+temphum - Comfort Level: A qualitative measure of how comfortable the climate is:
+    0: Normal
+    1: Fair
+    2: Uncomfortable
+    3: Hot
+    4: Cold
+
+humwind - Air Level: Describe the wind's force:
+    0: Calm
+    1: Breezy
+    2: Windy
+    3: Strong Wind
+    4: Gale
+
+events - Weather Events (Target): Indicates whether a weather event occured.
+    0: Indicates no weather event occurred.
+    1: Indicates that a significant weather event occurred.
+    

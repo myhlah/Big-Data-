@@ -9,29 +9,13 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix, mean_squared_error, ConfusionMatrixDisplay,roc_auc_score, roc_curve
 import joblib
 
-# Custom CSS for margins
-st.markdown("""
-    <style>
-        /* Adjust the width of the sidebar */
-        .css-1d391kg {
-            width: 100px;  /* Change this value to adjust the width */
-        }
-
-        /* Change the background color of the sidebar */
-        .css-1d391kg {
-            background-color: #f4f4f4; /* Light gray background */
-        }
-
-        /* Style the text in the sidebar */
-        .css-1d391kg .sidebar-content {
-            font-size: 18px; /* Change the font size */
-            color: #333; /* Text color */
-        }
-    </style>
-    """, unsafe_allow_html=True)
-
 # Sidebar for option selection
 option = st.sidebar.radio("Streamlit App", ['Classification Task', 'Regression Task'])
+st.sidebar.write("""  
+    ### Instructions:
+    1. Upload your CSV dataset.
+    2. Click the button to evaluate the model.
+      """)
 
 # Function to load the dataset with caching
 @st.cache_data
@@ -43,12 +27,6 @@ def load_data(uploaded_file):
 # Classification Task
 if option == 'Classification Task':
     st.title("Heart Disease Prediction Model")
-    st.header("Part I - Classification Task")
-    st.write("""  
-    ### Instructions:
-    1. Upload your CSV dataset.
-    2. Click the button to evaluate the model.
-      """)
 
     # RESAMPLING TECHNIQUES
     st.header("RESAMPLING TECHNIQUES")
@@ -251,10 +229,6 @@ if option == 'Classification Task':
 
             # Drop or fill NaN values
             dataframe.fillna(0, inplace=True)  # Filling NaN with 0, can also choose to drop
-                    
-            # Split into input and output variables
-            # st.write("Target Variable Distribution:")
-            # st.write(dataframe['target'].value_counts())
 
             # Checking for constant features
             constant_features = (dataframe.nunique() == 1).sum()
@@ -686,10 +660,6 @@ if option == 'Classification Task':
                 st.write("The dataset contains missing values. Please clean your data.")
                 return
 
-            # Display data types
-            #st.write("Data types in the dataset:")
-            #st.write(dataframe.dtypes)
-
             # Convert categorical features to numeric if necessary
             categorical_cols = dataframe.select_dtypes(include=['object']).columns.tolist()
             for col in categorical_cols:
@@ -723,8 +693,6 @@ if option == 'Classification Task':
 
             # Calculate confusion matrix
             matrix = confusion_matrix(Y_test, predicted)
-            #st.write("Confusion Matrix:")
-            #st.write(matrix)
 
             # Plot the confusion matrix
             fig, ax = plt.subplots()
@@ -797,11 +765,6 @@ if option == 'Classification Task':
             for col in categorical_cols:
                 le = LabelEncoder()
                 dataframe[col] = le.fit_transform(dataframe[col])
-
-            # Ensure all features are numeric
-            #st.write("Data types after encoding:")
-            #st.write(dataframe.dtypes)
-
 
             # Display first few rows of the dataset
             st.subheader("Dataset Preview")
@@ -876,7 +839,7 @@ if option == 'Classification Task':
 
     # Main app
     def main():
-        st.title("ROC AUC Score and Curve (75:25 Train-Test Split)")
+        st.title("5. ROC AUC Score and Curve (75:25 Train-Test Split)")
 
         # Unique file uploader for CSV
         uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="file_uploader6")
@@ -891,19 +854,11 @@ if option == 'Classification Task':
                 st.write("The dataset contains missing values. Please clean your data.")
                 return
 
-            # Display data types
-            #st.write("Data types in the dataset:")
-            #st.write(dataframe.dtypes)
-
             # Convert categorical features to numeric if necessary
             categorical_cols = dataframe.select_dtypes(include=['object']).columns.tolist()
             for col in categorical_cols:
                 le = LabelEncoder()
                 dataframe[col] = le.fit_transform(dataframe[col])
-
-            # Ensure all features are numeric
-            #st.write("Data types after encoding:")
-            #st.write(dataframe.dtypes)
 
             # Display first few rows of the dataset
             st.subheader("Dataset Preview")
@@ -978,12 +933,6 @@ if option == 'Classification Task':
 # Regression Task
 elif option == 'Regression Task':
     st.title("Climate Prediction Model")
-    st.header("Part II - Regression Task")
-    st.write("""
-    ### Instructions:
-    1. Upload your CSV dataset.
-    2. Click the button to evaluate the model.
-    """)
 
     # RESAMPLING TECHNIQUES
     st.header("RESAMPLING TECHNIQUES")
@@ -1003,11 +952,6 @@ elif option == 'Regression Task':
         st.write("### Dataset Preview:")
         st.write(data.head())  # Show the first few rows of the dataset
 
-        #st.write("### Dataset Columns:")
-        #st.write(data.columns.tolist())  # Show column names as a list
-
-        #st.write("### Check for Missing Values:")
-        #st.write(data.isnull().sum())
         st.write("### Correlation Matrix:")
         st.write(data.corr())
 
@@ -1134,341 +1078,334 @@ elif option == 'Regression Task':
             - **Above 30**: Severe changes, strong potential for extreme weather events or serious environmental impacts.
             """)
 
-# Function to load the dataset
-@st.cache_data
-def load_data(uploaded_file):
-    names = ['temp', 'hum', 'wind', 'pres', 'heat', 'dew', 'chill', 'temphum', 'humwind', 'target']  # Ensure correct column names
-    dataframe = pd.read_csv(uploaded_file, names=names)
-    return dataframe
+    # Function to load the dataset
+    @st.cache_data
+    def load_data(uploaded_file):
+        names = ['temp', 'hum', 'wind', 'pres', 'heat', 'dew', 'chill', 'temphum', 'humwind', 'target']  # Ensure correct column names
+        dataframe = pd.read_csv(uploaded_file, names=names)
+        return dataframe
 
-# Main app
-def main():
-    st.title("Repeated Random Test-Train Splits ")
+    # Main app
+    def main():
+        st.title("Repeated Random Test-Train Splits ")
 
-    # File uploader for CSV
-    uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="file_uploader_shuffle")
+        # File uploader for CSV
+        uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="file_uploader_shuffle")
 
-    if uploaded_file is not None:
-        # Load dataset
-        st.write("Loading the dataset...")
-        dataframe = load_data(uploaded_file)
+        if uploaded_file is not None:
+            # Load dataset
+            st.write("Loading the dataset...")
+            dataframe = load_data(uploaded_file)
 
-        # Check for missing values
-        #st.write("Checking for missing values...")
-        #st.write(dataframe.isnull().sum())
-        if dataframe.isnull().values.any():
-            st.write("Missing values detected! Filling missing values with column means.")
-            #dataframe = dataframe.fillna(dataframe.mean())  # Fills missing values with column mean
+            if dataframe.isnull().values.any():
+                st.write("Missing values detected! Filling missing values with column means.")
+                #dataframe = dataframe.fillna(dataframe.mean())  # Fills missing values with column mean
 
-        # Check data types
-        #st.write("Checking data types...")
-        #st.write(dataframe.dtypes)
+            # Ensure all columns are numeric
+            dataframe = dataframe.apply(pd.to_numeric, errors='coerce')  # Convert non-numeric data to NaN and then handle missing
+            #st.write("Converting non-numeric columns to numeric...")
 
-        # Ensure all columns are numeric
-        dataframe = dataframe.apply(pd.to_numeric, errors='coerce')  # Convert non-numeric data to NaN and then handle missing
-        #st.write("Converting non-numeric columns to numeric...")
+            # Check again for any remaining missing values after conversion
+            if dataframe.isnull().values.any():
+                #st.write("Missing values after conversion detected! Filling missing values with column means.")
+                dataframe = dataframe.fillna(dataframe.mean())  # Reapply fill for any new NaNs
 
-        # Check again for any remaining missing values after conversion
-        if dataframe.isnull().values.any():
-            #st.write("Missing values after conversion detected! Filling missing values with column means.")
-            dataframe = dataframe.fillna(dataframe.mean())  # Reapply fill for any new NaNs
+            # Check for columns with zero variance
+            #st.write("Checking for columns with zero variance...")
+            zero_variance_columns = dataframe.columns[dataframe.nunique() <= 1]
+            if len(zero_variance_columns) > 0:
+                #st.write(f"Columns with zero variance: {zero_variance_columns}. Removing these columns.")
+                dataframe = dataframe.loc[:, dataframe.nunique() > 1]  # Remove zero-variance columns
+            else:
+                #st.write("No columns with zero variance found.")
 
-        # Check for columns with zero variance
-        #st.write("Checking for columns with zero variance...")
-        zero_variance_columns = dataframe.columns[dataframe.nunique() <= 1]
-        if len(zero_variance_columns) > 0:
-            #st.write(f"Columns with zero variance: {zero_variance_columns}. Removing these columns.")
-            dataframe = dataframe.loc[:, dataframe.nunique() > 1]  # Remove zero-variance columns
+            # Display first few rows of the dataset
+                st.subheader("Dataset Preview")
+                st.write(dataframe.head())
+
+            # Preparing the data
+            array = dataframe.values
+            X = array[:, 0:-1]  # Features (all except the last column)
+            Y = array[:, -1]  # Target (last column)
+
+            # Parameters for Repeated Random Test-Train Splits
+            n_splits = st.slider("Select number of splits:", 2, 20, 10)
+            test_size = st.slider("Select test size proportion:", 0.1, 0.5, 0.33)
+            seed = st.number_input("Set random seed:", min_value=0, value=7)
+
+            # Shuffle and split dataset 'n_splits' times
+            shuffle_split = ShuffleSplit(n_splits=n_splits, test_size=test_size, random_state=seed)
+
+            # Train the data on a Linear Regression model
+            model = LinearRegression()
+
+            # Evaluate using Repeated Random Test-Train Splits
+            st.write("Evaluating the model...")
+            results = cross_val_score(model, X, Y, cv=shuffle_split)
+
+            # Display results
+            st.subheader("Repeated Random Test-Train Split Results")
+            mean_accuracy = results.mean()*100
+            std_deviation = results.std()*100
+            st.write(f"Accuracy: {mean_accuracy:.3f}%")
+            st.write(f"Standard Deviation: {std_deviation:.3f}%")
+
+            # Interpretation and Guide
+            st.subheader("Interpretation and Guide")
+
+            # Accuracy interpretation
+            if mean_accuracy > 0.8:
+                st.write("- The model has a **high accuracy** with a value of {mean_accuracy:.3f}. This means that the model explains a significant portion of the variance in the target variable.")
+            elif 0.5 <= mean_accuracy <= 0.8:
+                st.write("- The model has a **moderate accuracy** with a value of {mean_accuracy:.3f}. The model is reasonably good but could be improved with feature engineering or a different model.")
+            else:
+                st.write("- The model has a **low accuracy** with a value of {mean_accuracy:.3f}. The model is not adequately explaining the variance in the target variable. Consider improving the dataset or trying a different approach.")
+
+            # Standard deviation interpretation
+            if std_deviation < 0.05:
+                st.write("- The model is **highly consistent** across splits, as indicated by the low standard deviation of {std_deviation:.3f}. This means the model's performance is stable across different train-test splits.")
+            elif 0.05 <= std_deviation <= 0.15:
+                st.write("- The model is **moderately consistent** with a standard deviation of {std_deviation:.3f}. There is some variation in model performance across different splits, but it is still acceptable.")
+            else:
+                st.write("- The model is **inconsistent** with a high standard deviation of {std_deviation:.3f}. The model's performance varies significantly across different splits. Consider revisiting the model or dataset.")
+
         else:
-            #st.write("No columns with zero variance found.")
+            st.write("Please upload a CSV file to proceed.")
 
-        # Display first few rows of the dataset
+    if __name__ == "__main__":
+        main()
+
+
+    # Function to load the dataset
+    @st.cache_data
+    def load_data(uploaded_file):
+        names = ['temp', 'hum', 'wind', 'pres', 'heat', 'dew', 'chill', 'temphum', 'humwind', 'target']  # Ensure correct column names
+        dataframe = pd.read_csv(uploaded_file, names=names, header=None)
+        dataframe = dataframe.apply(pd.to_numeric, errors='coerce')
+        
+        # Drop rows with missing values (optional step)
+        dataframe = dataframe.dropna()
+        
+        return dataframe
+
+    # Main app
+    def main():
+        st.title("1. Mean Squared Error (MSE) (80:20 train-test split)")
+
+        # Unique file uploader for CSV
+        uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="unique_file_uploader2")
+
+        if uploaded_file is not None:
+            # Load dataset
+            st.write("Loading the dataset...")
+            dataframe = load_data(uploaded_file)
+
+            # Display first few rows of the dataset
             st.subheader("Dataset Preview")
             st.write(dataframe.head())
 
-        # Preparing the data
-        array = dataframe.values
-        X = array[:, 0:-1]  # Features (all except the last column)
-        Y = array[:, -1]  # Target (last column)
+            # Preparing the data
+            array = dataframe.values
+            X = array[:, :-1]  
+            Y = array[:, -1]  
 
-        # Parameters for Repeated Random Test-Train Splits
-        n_splits = st.slider("Select number of splits:", 2, 20, 10)
-        test_size = st.slider("Select test size proportion:", 0.1, 0.5, 0.33)
-        seed = st.number_input("Set random seed:", min_value=0, value=7)
+            # Split the dataset into an 80:20 train-test split
+            test_size = 0.2
+            seed = 42  # Random seed for reproducibility
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
 
-        # Shuffle and split dataset 'n_splits' times
-        shuffle_split = ShuffleSplit(n_splits=n_splits, test_size=test_size, random_state=seed)
+            # Train the data on a Linear Regression model
+            model = LinearRegression()
+            model.fit(X_train, Y_train)
 
-        # Train the data on a Linear Regression model
-        model = LinearRegression()
+            # Make predictions on the test data
+            Y_pred = model.predict(X_test)
 
-        # Evaluate using Repeated Random Test-Train Splits
-        st.write("Evaluating the model...")
-        results = cross_val_score(model, X, Y, cv=shuffle_split)
+            # Calculate the mean squared error on the test set
+            mse = mean_squared_error(Y_test, Y_pred)
 
-        # Display results
-        st.subheader("Repeated Random Test-Train Split Results")
-        mean_accuracy = results.mean()*100
-        std_deviation = results.std()*100
-        st.write(f"Accuracy: {mean_accuracy:.3f}%")
-        st.write(f"Standard Deviation: {std_deviation:.3f}%")
+            # Display results
+            st.subheader("Model Evaluation")
+            st.write(f"Mean Squared Error (MSE): {mse:.3f}")
 
-        # Interpretation and Guide
-        st.subheader("Interpretation and Guide")
+            # Interpretation and guidance
+            st.subheader("Interpretation of Results")
 
-        # Accuracy interpretation
-        if mean_accuracy > 0.8:
-            st.write("- The model has a **high accuracy** with a value of {mean_accuracy:.3f}. This means that the model explains a significant portion of the variance in the target variable.")
-        elif 0.5 <= mean_accuracy <= 0.8:
-            st.write("- The model has a **moderate accuracy** with a value of {mean_accuracy:.3f}. The model is reasonably good but could be improved with feature engineering or a different model.")
+            # Create two columns for Data Info and Missing Values
+            col1, col2 = st.columns(2)
+
+            #  first column
+            with col1:
+                st.write(
+                """
+                The Mean Squared Error (MSE) is a measure of how well the linear regression model predicts the target variable. 
+                Specifically, MSE represents the average squared difference between the predicted values and the actual values. 
+                A lower MSE indicates a better fit of the model to the data, meaning that the predictions are closer to the actual outcomes.
+                    """
+                )
+                
+            # second column
+            with col2:
+                st.write(
+                    """
+                    Here's a general guideline for interpreting the MSE value:
+                    - **MSE = 0:** Perfect model with no prediction error.
+                    - **0 < MSE < 10:** Good model performance. The predictions are reasonably close to the actual values.
+                    - **10 ≤ MSE < 100:** Moderate model performance. The predictions have some error and may require further improvement.
+                    - **MSE ≥ 100:** Poor model performance. The predictions are far from the actual values, indicating that the model may not be capturing the underlying trends in the data well.
+                    """
+                )
         else:
-            st.write("- The model has a **low accuracy** with a value of {mean_accuracy:.3f}. The model is not adequately explaining the variance in the target variable. Consider improving the dataset or trying a different approach.")
+            st.write("Please upload a CSV file to proceed.")
 
-        # Standard deviation interpretation
-        if std_deviation < 0.05:
-            st.write("- The model is **highly consistent** across splits, as indicated by the low standard deviation of {std_deviation:.3f}. This means the model's performance is stable across different train-test splits.")
-        elif 0.05 <= std_deviation <= 0.15:
-            st.write("- The model is **moderately consistent** with a standard deviation of {std_deviation:.3f}. There is some variation in model performance across different splits, but it is still acceptable.")
+    if __name__ == "__main__":
+        main()
+
+    # Function to load the dataset
+    @st.cache_data
+    def load_data(uploaded_file):
+        names = ['temp', 'hum', 'wind', 'pres', 'heat', 'dew', 'chill', 'temphum', 'humwind', 'target']  # Ensure correct column names
+        dataframe = pd.read_csv(uploaded_file, names=names, header=None)
+        dataframe = dataframe.apply(pd.to_numeric, errors='coerce')
+
+        # Drop rows with any NaN values
+        dataframe = dataframe.dropna()
+        
+        return dataframe  # Ensure the dataframe is returned
+
+    # Main app
+    def main():
+        st.title("2. Mean Absolute Error (MAE) (K-fold Cross Validation)")
+
+        # Unique file uploader for CSV
+        uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="unique_file_uploader")
+
+        if uploaded_file is not None:
+            # Load dataset
+            st.write("Loading the dataset...")
+            dataframe = load_data(uploaded_file)
+
+            # Display first few rows of the dataset
+            st.subheader("Dataset Preview")
+            st.write(dataframe.head())
+
+            # Preparing the data
+            array = dataframe.values
+            X = array[:, :-1]  # Features
+            Y = array[:, -1]   # Target variable
+
+            # Set up cross-validation
+            kfold = KFold(n_splits=10, random_state=None)
+            
+            # Train the model
+            model = LinearRegression()
+
+            # Calculate the mean absolute error
+            scoring = 'neg_mean_absolute_error'
+            results = cross_val_score(model, X, Y, cv=kfold, scoring=scoring)
+            
+            # Display results
+            st.subheader("Cross-Validation Results")
+            mae = -results.mean()
+            std_dev = results.std()
+            st.write(f"Mean Absolute Error (MAE): {mae:.3f} (+/- {std_dev:.3f})")
+
+            # Interpretation and guidance
+            st.subheader("Interpretation of Results")
+
+            # Create two columns for Data Info and Missing Values
+            col1, col2 = st.columns(2)
+
+            #  first column
+            with col1:
+                st.write(
+                    """
+                    The Mean Absolute Error (MAE) is a measure of prediction accuracy for regression models. 
+                    It represents the average absolute difference between the predicted values and the actual values. 
+                    A lower MAE indicates better model performance, meaning the predictions are closer to the actual outcomes.
+                    """
+                )   
+                
+            # second column
+            with col2:
+                st.write(
+                    """
+                    Here's how to interpret the MAE value:
+                    - **MAE = 0:** Perfect model with no prediction error.
+                    - **0 < MAE < 10:** Good model performance, with predictions reasonably close to the actual values.
+                    - **10 ≤ MAE < 50:** Moderate model performance; the predictions have some error and may need improvement.
+                    - **MAE ≥ 50:** Poor model performance; the predictions are far from the actual values, indicating that the model may not capture the underlying trends well. """
+                )
         else:
-            st.write("- The model is **inconsistent** with a high standard deviation of {std_deviation:.3f}. The model's performance varies significantly across different splits. Consider revisiting the model or dataset.")
+            st.write("Please upload a CSV file to proceed.")
 
-    else:
-        st.write("Please upload a CSV file to proceed.")
+    if __name__ == "__main__":
+        main()    
+    # Function to load the dataset
+    @st.cache_data
+    def load_data(uploaded_file):
+        names = ['temp', 'hum', 'wind', 'pres', 'heat', 'dew', 'chill', 'temphum', 'humwind', 'target']  # Ensure correct column names
+        dataframe = pd.read_csv(uploaded_file, names=names, header=None)
+        dataframe = dataframe.apply(pd.to_numeric, errors='coerce')
 
-if __name__ == "__main__":
-    main()
-
-
-# Function to load the dataset
-@st.cache_data
-def load_data(uploaded_file):
-    names = ['temp', 'hum', 'wind', 'pres', 'heat', 'dew', 'chill', 'temphum', 'humwind', 'target']  # Ensure correct column names
-    dataframe = pd.read_csv(uploaded_file, names=names, header=None)
-    dataframe = dataframe.apply(pd.to_numeric, errors='coerce')
-    
-    # Drop rows with missing values (optional step)
-    dataframe = dataframe.dropna()
-    
-    return dataframe
-
-# Main app
-def main():
-    st.title("1. Mean Squared Error (MSE) (80:20 train-test split)")
-
-    # Unique file uploader for CSV
-    uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="unique_file_uploader2")
-
-    if uploaded_file is not None:
-        # Load dataset
-        st.write("Loading the dataset...")
-        dataframe = load_data(uploaded_file)
-
-        # Display first few rows of the dataset
-        st.subheader("Dataset Preview")
-        st.write(dataframe.head())
-
-        # Preparing the data
-        array = dataframe.values
-        X = array[:, :-1]  # Features (all columns except the last one)
-        Y = array[:, -1]   # Target variable (last column)
-
-        # Split the dataset into an 80:20 train-test split
-        test_size = 0.2
-        seed = 42  # Random seed for reproducibility
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
-
-        # Train the data on a Linear Regression model
-        model = LinearRegression()
-        model.fit(X_train, Y_train)
-
-        # Make predictions on the test data
-        Y_pred = model.predict(X_test)
-
-        # Calculate the mean squared error on the test set
-        mse = mean_squared_error(Y_test, Y_pred)
-
-        # Display results
-        st.subheader("Model Evaluation")
-        st.write(f"Mean Squared Error (MSE): {mse:.3f}")
-
-        # Interpretation and guidance
-        st.subheader("Interpretation of Results")
-
-        # Create two columns for Data Info and Missing Values
-        col1, col2 = st.columns(2)
-
-        #  first column
-        with col1:
-            st.write(
-            """
-            The Mean Squared Error (MSE) is a measure of how well the linear regression model predicts the target variable. 
-            Specifically, MSE represents the average squared difference between the predicted values and the actual values. 
-            A lower MSE indicates a better fit of the model to the data, meaning that the predictions are closer to the actual outcomes.
-                """
-            )
-            
-
-        # second column
-        with col2:
-            st.write(
-                """
-                Here's a general guideline for interpreting the MSE value:
-                - **MSE = 0:** Perfect model with no prediction error.
-                - **0 < MSE < 10:** Good model performance. The predictions are reasonably close to the actual values.
-                - **10 ≤ MSE < 100:** Moderate model performance. The predictions have some error and may require further improvement.
-                - **MSE ≥ 100:** Poor model performance. The predictions are far from the actual values, indicating that the model may not be capturing the underlying trends in the data well.
-                """
-            )
-    else:
-        st.write("Please upload a CSV file to proceed.")
-
-if __name__ == "__main__":
-    main()
-
-# Function to load the dataset
-@st.cache_data
-def load_data(uploaded_file):
-    names = ['temp', 'hum', 'wind', 'pres', 'heat', 'dew', 'chill', 'temphum', 'humwind', 'target']  # Ensure correct column names
-    dataframe = pd.read_csv(uploaded_file, names=names, header=None)
-    dataframe = dataframe.apply(pd.to_numeric, errors='coerce')
-
-    # Drop rows with any NaN values
-    dataframe = dataframe.dropna()
-    
-    return dataframe  # Ensure the dataframe is returned
-
-# Main app
-def main():
-    st.title("2. Mean Absolute Error (MAE) (K-fold Cross Validation)")
-
-    # Unique file uploader for CSV
-    uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="unique_file_uploader")
-
-    if uploaded_file is not None:
-        # Load dataset
-        st.write("Loading the dataset...")
-        dataframe = load_data(uploaded_file)
-
-        # Display first few rows of the dataset
-        st.subheader("Dataset Preview")
-        st.write(dataframe.head())
-
-        # Preparing the data
-        array = dataframe.values
-        X = array[:, :-1]  # Features
-        Y = array[:, -1]   # Target variable
-
-        # Set up cross-validation
-        kfold = KFold(n_splits=10, random_state=None)
+        # Drop rows with any NaN values
+        dataframe = dataframe.dropna()
         
-        # Train the model
-        model = LinearRegression()
+        return dataframe  # Ensure the dataframe is returned
 
-        # Calculate the mean absolute error
-        scoring = 'neg_mean_absolute_error'
-        results = cross_val_score(model, X, Y, cv=kfold, scoring=scoring)
-        
-        # Display results
-        st.subheader("Cross-Validation Results")
-        mae = -results.mean()
-        std_dev = results.std()
-        st.write(f"Mean Absolute Error (MAE): {mae:.3f} (+/- {std_dev:.3f})")
+    # Main app
+    def main():
+        st.title(" 3. R² (K-fold Cross Validation)")
 
-        # Interpretation and guidance
-        st.subheader("Interpretation of Results")
+        # Unique file uploader for CSV
+        uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="unique_file_uploader3")
 
-        # Create two columns for Data Info and Missing Values
-        col1, col2 = st.columns(2)
+        if uploaded_file is not None:
+            # Load dataset
+            st.write("Loading the dataset...")
+            dataframe = load_data(uploaded_file)
 
-        #  first column
-        with col1:
+            # Display first few rows of the dataset
+            st.subheader("Dataset Preview")
+            st.write(dataframe.head())
+
+            # Preparing the data
+            array = dataframe.values
+            X = array[:, :-1]  
+            Y = array[:, -1]   
+
+            # Split the dataset into a 10-fold cross-validation
+            kfold = KFold(n_splits=10, random_state=None, shuffle=True)
+
+            # Train the data on a Linear Regression model
+            model = LinearRegression()
+
+            # Calculate the R² score using cross-validation
+            scoring = 'r2'
+            results = cross_val_score(model, X, Y, cv=kfold, scoring=scoring)
+
+    # Display results
+            st.subheader("Model Evaluation")
+            st.write(f"Average R² Score: {results.mean():.3f} (± {results.std():.3f})")
+
+            # Interpretation and guidance
+            st.subheader("Interpretation of Results")
             st.write(
                 """
-                The Mean Absolute Error (MAE) is a measure of prediction accuracy for regression models. 
-                It represents the average absolute difference between the predicted values and the actual values. 
-                A lower MAE indicates better model performance, meaning the predictions are closer to the actual outcomes.
+                The R² (R-squared) score is a statistical measure that represents the proportion of variance for a dependent variable that's explained by independent variables in a regression model. 
+
+                Here's how to interpret the R² score:
+                - **R² = 1:** Perfect model; it explains 100% of the variability in the target variable.
+                - **0.7 ≤ R² < 1:** Good model performance; a significant portion of the variance is explained by the model.
+                - **0.3 ≤ R² < 0.7:** Moderate model performance; the model explains some variance but may be improved.
+                - **R² < 0.3:** Poor model performance; the model explains very little variance, indicating that it may not be suitable for the data.
+
+            Keep in mind that a higher R² value does not always mean the model is better. It's essential to validate the model's performance using other metrics and visualizations.
                 """
-            )   
-            
-        # second column
-        with col2:
-            st.write(
-                """
-                Here's how to interpret the MAE value:
-                - **MAE = 0:** Perfect model with no prediction error.
-                - **0 < MAE < 10:** Good model performance, with predictions reasonably close to the actual values.
-                - **10 ≤ MAE < 50:** Moderate model performance; the predictions have some error and may need improvement.
-                - **MAE ≥ 50:** Poor model performance; the predictions are far from the actual values, indicating that the model may not capture the underlying trends well. """
             )
-    else:
-        st.write("Please upload a CSV file to proceed.")
+        else:
+            st.write("Please upload a CSV file to proceed.")
 
-if __name__ == "__main__":
-    main()    
-# Function to load the dataset
-@st.cache_data
-def load_data(uploaded_file):
-    names = ['temp', 'hum', 'wind', 'pres', 'heat', 'dew', 'chill', 'temphum', 'humwind', 'target']  # Ensure correct column names
-    dataframe = pd.read_csv(uploaded_file, names=names, header=None)
-    dataframe = dataframe.apply(pd.to_numeric, errors='coerce')
-
-    # Drop rows with any NaN values
-    dataframe = dataframe.dropna()
-    
-    return dataframe  # Ensure the dataframe is returned
-
-# Main app
-def main():
-    st.title(" 3. R² (K-fold Cross Validation)")
-
-    # Unique file uploader for CSV
-    uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"], key="unique_file_uploader3")
-
-    if uploaded_file is not None:
-        # Load dataset
-        st.write("Loading the dataset...")
-        dataframe = load_data(uploaded_file)
-
-        # Display first few rows of the dataset
-        st.subheader("Dataset Preview")
-        st.write(dataframe.head())
-
-        # Preparing the data
-        array = dataframe.values
-        X = array[:, :-1]  # Features (all columns except the last one)
-        Y = array[:, -1]   # Target variable (last column)
-
-        # Split the dataset into a 10-fold cross-validation
-        kfold = KFold(n_splits=10, random_state=None, shuffle=True)
-
-        # Train the data on a Linear Regression model
-        model = LinearRegression()
-
-        # Calculate the R² score using cross-validation
-        scoring = 'r2'
-        results = cross_val_score(model, X, Y, cv=kfold, scoring=scoring)
-
-# Display results
-        st.subheader("Model Evaluation")
-        st.write(f"Average R² Score: {results.mean():.3f} (± {results.std():.3f})")
-
-        # Interpretation and guidance
-        st.subheader("Interpretation of Results")
-        st.write(
-            """
-            The R² (R-squared) score is a statistical measure that represents the proportion of variance for a dependent variable that's explained by independent variables in a regression model. 
-
-            Here's how to interpret the R² score:
-            - **R² = 1:** Perfect model; it explains 100% of the variability in the target variable.
-            - **0.7 ≤ R² < 1:** Good model performance; a significant portion of the variance is explained by the model.
-            - **0.3 ≤ R² < 0.7:** Moderate model performance; the model explains some variance but may be improved.
-            - **R² < 0.3:** Poor model performance; the model explains very little variance, indicating that it may not be suitable for the data.
-
-           Keep in mind that a higher R² value does not always mean the model is better. It's essential to validate the model's performance using other metrics and visualizations.
-            """
-        )
-    else:
-        st.write("Please upload a CSV file to proceed.")
-
-if __name__ == "__main__":
-    main()
+    if __name__ == "__main__":
+        main()
+ #macala normailah itd105 it4d
