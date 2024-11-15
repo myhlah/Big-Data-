@@ -385,14 +385,10 @@ elif option == 'Hyperparameter Tuning':
     st.write("""       
         ### Instructions for Hyperparameter Tuning
         1. **Set Hyperparameters**  
-        - Adjust **Number of Estimators** (controls the number of boosting rounds; higher values may improve accuracy but increase computation time).
-        - Adjust **Learning Rate** (controls the contribution of each estimator; lower values require more estimators for stability).
         
         2. **Run Tuning**  
-        - The model will train using cross-validation and display Mean Absolute Error on the test set.
         
         3. **Results**  
-        - See the table below for a summary of each tuned model's performance.
     """)
 
     st.write("<br><br>", unsafe_allow_html=True)
