@@ -509,18 +509,12 @@ elif option == 'Hyperparameter Tuning':
     st.write("""       
         ### Instructions for Hyperparameter Tuning
         1. **Upload Dataset**  
-             - Ensure heart.csv is available at the specified path.
 
         2. **Set Hyperparameters**  
-             - Adjust **Test Size** (fraction of data for testing).
-             - Set **Random Seed** for reproducibility.
-             - Choose **Var Smoothing** (log scale) to adjust model smoothing.
 
         3. **Run Tuning**  
-            - The model will train and display accuracy on the test set.
 
         4. **Result/s**  
-            - See table below summarizes the results of each tuned model.
     """)
 
     st.write("<br><br>", unsafe_allow_html=True)
