@@ -98,14 +98,15 @@ if option == 'Sampling Technique/s':
             st.write(data.shape)  # This will show you how many rows and columns are in your dataset
 
             # Set the test size using a slider
-            test_size = st.slider("Test size (as a percentage)", 10, 50, 20) / 100
-            seed = 7
+            test_size = st.slider("Test Size (fraction)", 0.1, 0.5, 0.2, key="test_size2")
+            random_seed = st.slider("Random Seed", 1, 100, 7, key="random_seed2")
+            n_estimators = st.slider("Number of Estimators", 1, 100, 50)
 
             # Split the dataset into test and train
-            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=random_seed)
 
             # Train the data on a Logistic Regression model
-            model = LogisticRegression(max_iter=200)
+            model = AdaBoostClassifier(n_estimators=n_estimators, random_state=random_seed)
             model.fit(X_train, Y_train)
 
             # Evaluate the accuracy
@@ -290,17 +291,19 @@ elif option == 'Performance Metric/s':
             Y = array[:, 13]     # Target
 
             # Check if dataset is too small for the number of folds
-            num_folds = st.slider("Select number of folds for K-Fold Cross Validation:", 2, 20, 10)
+            num_folds = st.slider("Select number of folds:", 2, min(20, len(dataframe)), 10)
+            kfold = KFold(n_splits=num_folds, shuffle=True, random_state=None)
+            model = AdaBoostClassifier(random_state=None)
+            
             if len(dataframe) < num_folds:
                 st.write("The dataset is too small for the number of folds selected.")
                 return
 
             kfold = KFold(n_splits=num_folds, shuffle=True, random_state=None)
-            model = LogisticRegression(max_iter=210)
+            model = AdaBoostClassifier(random_state=None)
 
             # Calculate classification accuracy
-            scoring = 'accuracy'
-            results = cross_val_score(model, X, Y, cv=kfold, scoring=scoring)
+            results = cross_val_score(model, X, Y, cv=kfold, scoring='accuracy')
 
             # Check if results contain any NaN
             if results is None or len(results) == 0 or any(pd.isna(results)):
@@ -367,21 +370,15 @@ elif option == 'Performance Metric/s':
             st.subheader("Dataset Preview")
             st.write(dataframe.head())
 
-            # Preparing the data
-            array = dataframe.values
-            X = array[:, 0:13]
-            Y = array[:, 13]
-
-            # Split the dataset into a 75:25 train-test split
-            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25, random_state=None)
-
-            # Train the data on a Logistic Regression model
-            model = LogisticRegression(max_iter=210)
-            model.fit(X_train, Y_train)
-
-            # Evaluate the model on the test set
-            accuracy = model.score(X_test, Y_test)
+            # Prepare features and target
+            X, Y = dataframe.iloc[:, :-1], dataframe.iloc[:, -1]
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25, random_state=42)
             
+            # Train and evaluate model
+            model = AdaBoostClassifier(random_state=42)
+            model.fit(X_train, Y_train)
+            accuracy = model.score(X_test, Y_test)
+                    
             # Display results
             st.subheader("Model Evaluation")
             st.write(f"Accuracy: {accuracy * 100:.3f}%")
@@ -441,28 +438,36 @@ elif option == 'Performance Metric/s':
             #st.write("Data types in the dataset:")
             #st.write(dataframe.dtypes)
 
+            # Display first few rows of the dataset
+            st.subheader("Dataset Preview")
+            st.write(dataframe.head())
+
+            # Identify categorical columns
+            categorical_cols = dataframe.select_dtypes(include=['object']).columns.tolist()
+            st.write(f"Categorical columns to encode: {categorical_cols}")
+
             # Convert categorical features to numeric if necessary
             categorical_cols = dataframe.select_dtypes(include=['object']).columns.tolist()
             for col in categorical_cols:
                 le = LabelEncoder()
                 dataframe[col] = le.fit_transform(dataframe[col])
 
-            # Display first few rows of the dataset
-            st.subheader("Dataset Preview")
-            st.write(dataframe.head())
+            # Feature and target selection
+            st.subheader("Dataset Summary")
+            st.write("Ensure the last column is the target variable.")
+            st.write(dataframe.info())
 
-            # Preparing the data
-            array = dataframe.values
-            X = array[:, 0:13]
-            Y = array[:, 13]
-
+            # Splitting features and target
+            X = dataframe.iloc[:, :-1].values
+            Y = dataframe.iloc[:, -1].values    
+            
             # Split the dataset into train and test
             test_size = 0.33
             seed = 7
             X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
 
             # Train the data on a Logistic Regression model
-            model = LogisticRegression(max_iter=180)
+            model = AdaBoostClassifier(random_state=seed)
             model.fit(X_train, Y_train)
 
             # Get predictions
@@ -515,6 +520,7 @@ elif option == 'Hyperparameter Tuning':
         3. **Run Tuning**  
 
         4. **Result/s**  
+
     """)
 
     st.write("<br><br>", unsafe_allow_html=True)
