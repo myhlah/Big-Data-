@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression, LinearRegression  # ML Algo
 from sklearn.preprocessing import StandardScaler,LabelEncoder
 from sklearn.impute import SimpleImputer
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error, accuracy_score #performance metric
+from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_score #performance metric
 from sklearn.tree import DecisionTreeRegressor #Hyperparameter Tuning
 from sklearn.linear_model import ElasticNet
 from sklearn.ensemble import AdaBoostRegressor
@@ -161,30 +161,33 @@ if option == 'Sampling Technique/s':
             X = dataframe.drop('is_safe', axis=1).values
             Y = dataframe['is_safe'].values
 
-            test_size = st.slider("Test size (as a percentage)", 10, 50, 20) / 100
-            seed = 7
+            # Set the test size using a slider
+            test_size = st.slider("Test Size (fraction)", 0.1, 0.5, 0.2, key="test_size2")
+            random_seed = st.slider("Random Seed", 1, 100, 7, key="random_seed2")
+            n_estimators = st.slider("Number of Estimators", 1, 100, 50, key="n_estimators2")
 
             # Split the dataset into test and train
-            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=random_seed)
 
-            # Train the data on a Logistic Regression model
-            model = LogisticRegression(max_iter=200)
+            # Train the data on an AdaBoost Regressor
+            model = AdaBoostRegressor(n_estimators=n_estimators, random_state=random_seed)
             model.fit(X_train, Y_train)
 
-            # Evaluate the accuracy
-            result = model.score(X_test, Y_test)
-            accuracy = result * 100
-            st.write(f"Accuracy: {accuracy:.3f}%")
+            # Predict the target values for the test set
+            Y_pred = model.predict(X_test)
 
-            # Interpretation of the accuracy
-            if accuracy < 0:
-                st.warning("The model's performance is poor. Please check your data for quality and relevance.")
-            elif accuracy < 50:
-                st.warning("The model has low predictive power. Consider gathering more data or using different features.")
-            elif accuracy < 75:
-                st.success("The model has moderate predictive power. It may perform reasonably well.")
+            # Evaluate the model using Mean Absolute Error
+            mae = mean_absolute_error(Y_test, Y_pred)
+            st.write(f"Mean Absolute Error (MAE): {mae:.3f}")
+
+            # Interpretation of the MAE
+            st.write("### Interpretation of MAE:")
+            if mae > 50:
+                st.warning("The model's predictions are significantly off. Consider improving your data or model.")
+            elif mae > 20:
+                st.info("The model has moderate prediction error. It might require additional tuning or feature selection.")
             else:
-                st.success("The model has high predictive power.")
+                st.success("The model has low prediction error. The predictions are reasonably accurate!")
 
             # Save and download the model
             model.fit(X, Y)
@@ -277,19 +280,19 @@ elif option == 'Performance Metric/s':
             X = array[:, :-1]  # Features (all columns except the last one)
             Y = array[:, -1]   # Target variable (last column)
 
-            # Split the dataset into an 80:20 train-test split
+            # Split dataset into an 80:20 train-test split
             test_size = 0.2
             seed = 42  # Random seed for reproducibility
             X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
 
-            # Train the data on a Linear Regression model
-            model = LinearRegression()
+            # Train the model using AdaBoost Regressor
+            model = AdaBoostRegressor(random_state=seed)
             model.fit(X_train, Y_train)
 
             # Make predictions on the test data
             Y_pred = model.predict(X_test)
 
-            # Calculate the mean squared error on the test set
+            # Calculate Mean Squared Error (MSE)
             mse = mean_squared_error(Y_test, Y_pred)
 
             # Display results
@@ -338,20 +341,22 @@ elif option == 'Performance Metric/s':
             X = array[:, :-1]  # Features
             Y = array[:, -1]   # Target variable
 
-            # Set up cross-validation
-            kfold = KFold(n_splits=10, random_state=None)
-            
-            # Train the model
-            model = LinearRegression()
+            # Set up K-Fold Cross-Validation
+            kfold = KFold(n_splits=10, shuffle=True, random_state=None)
 
-            # Calculate the mean absolute error
+            # Train the model using AdaBoost Regressor
+            model = AdaBoostRegressor(random_state=42)
+
+            # Calculate the mean absolute error using cross-validation
             scoring = 'neg_mean_absolute_error'
             results = cross_val_score(model, X, Y, cv=kfold, scoring=scoring)
-            
-            # Display results
-            st.subheader("Cross-Validation Results")
+
+            # Convert negative scores to positive (since MAE is inherently positive)
             mae = -results.mean()
             std_dev = results.std()
+
+            # Display results
+            st.subheader("Cross-Validation Results")
             st.write(f"Mean Absolute Error (MAE): {mae:.3f} (+/- {std_dev:.3f})")
 
             # Interpretation and guidance
@@ -387,8 +392,9 @@ elif option == 'Hyperparameter Tuning':
         1. **Set Hyperparameters**  
         
         2. **Run Tuning**  
-        
+    
         3. **Results**  
+       
     """)
 
     st.write("<br><br>", unsafe_allow_html=True)
