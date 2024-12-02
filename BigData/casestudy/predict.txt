@@ -1,0 +1,127 @@
+# 5 per page radio
+
+import streamlit as st
+import joblib
+
+# Initialize session state variables
+if 'question_set' not in st.session_state:
+    st.session_state['question_set'] = 1  # Start with the first set of questions
+if 'answers' not in st.session_state:
+    st.session_state['answers'] = {}
+
+def display_question_set(question_set):
+    # Define sets of 5 questions at a time
+    question_sets = {
+        1: [
+            ("Enter your name (Optional):", "text_input"),
+            ("Do you have high blood pressure?", "radio", [0, 1]),
+            ("Do you have high cholesterol?", "radio", [0, 1]),
+            ("Have you had a cholesterol check in the last 5 years?", "radio", [0, 1]),
+            ("What is your Body Mass Index (BMI)?", "number_input", 0, 120, 0),
+        ],
+        2: [
+            ("Have you ever smoked at least 100 cigarettes in your entire life?", "radio", [0, 1]),
+            ("Have you ever been told by a doctor that you had a stroke?", "radio", [0, 1]),
+            ("Have you ever been diagnosed with coronary heart disease (CHD) or had a myocardial infarction (MI)?", "radio", [0, 1]),
+            ("Have you engaged in physical activity in the past 30 days, excluding your job?", "radio", [0, 1]),
+            ("Do you consume fruits at least once per day?", "radio", [0, 1]),
+        ],
+        3: [
+            ("Do you consume vegetables at least once per day?", "radio", [0, 1]),
+            ("Do you consume alcohol heavily?", "radio", [0, 1]),
+            ("Do you have any kind of health care coverage?", "radio", [0, 1]),
+            ("In the past 12 months, was there ever a time when you needed to see a doctor but could not because of cost?", "radio", [0, 1]),
+            ("How would you rate your general health?", "radio", [1, 2, 3, 4, 5]),
+        ],
+        4: [
+            ("In the past 30 days, how many days did you experience poor mental health?", "number_input", 0, 30, 0),
+            ("Do you have any physical health issues?", "radio", [0, 1]),
+            ("Do you have serious difficulty walking or climbing stairs?", "radio", [0, 1]),
+            ("What is your gender?", "radio", [0, 1]),
+            ("What is your age category?", "radio", [1, 2, 3, 4]),
+        ],
+        5: [
+            ("What is your highest level of education?", "radio", [1, 2, 3, 4, 5, 6]),
+            ("What is your annual income?", "radio", [1, 2, 3, 4, 5, 6]),
+        ]
+    }
+    
+    questions = question_sets.get(question_set, [])
+    
+    # Display the questions in the current set
+    for i, (question, qtype, *args) in enumerate(questions):
+        if qtype == "text_input":
+            user_input = st.text_input(question)
+        elif qtype == "radio":
+            options = ["Yes", "No"] if len(args) == 1 else [
+                "Excellent", "Very good", "Good", "Fair", "Poor"] if question == "How would you rate your general health?" else [
+                "18-30", "31-59", "60-79", "80 or older"] if question == "What is your age category?" else [
+                "No formal education", "Elementary", "High School", "Senior High", "College", "Masters/Doctorate"] if question == "What is your highest level of education?" else [
+                "Below 100,000", "100,000-300,000", "300,000-600,000", "600,000-1,000,000", "1,000,000-3,000,000", "Above 3,000,000"]
+
+            user_input = st.radio(question, options, index=0)
+        elif qtype == "number_input":
+            min_value, max_value, value = args
+            user_input = st.number_input(question, min_value=min_value, max_value=max_value, value=value)
+        
+        # Store the answer in session state
+        st.session_state['answers'][f"q{question_set}_{i}"] = user_input
+
+def main():
+    # Streamlit App Title
+    st.title("Make Predictions using a Trained Model")
+
+    # Upload a trained model
+    model_file = st.file_uploader("Upload your trained model (.pkl file)", type=["pkl"])
+
+    # Ensure model is uploaded before proceeding
+    if model_file is not None:
+        # Load the model
+        model = joblib.load(model_file)
+        st.success("Model successfully loaded!")
+        st.write("<br><br>", unsafe_allow_html=True)
+
+
+        # Display the current question set based on session state
+        display_question_set(st.session_state['question_set'])
+        
+        # Calculate the progress (e.g., 1 out of 5 question sets)
+        progress = (st.session_state['question_set'] - 1) / 5  # As we have 5 sets
+        st.progress(progress)
+
+        # Handle navigation between question sets
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.session_state['question_set'] > 1:
+                if st.button("Back"):
+                    st.session_state['question_set'] -= 1
+        
+        with col2:
+            if st.session_state['question_set'] < 5:
+                if st.button("Next"):
+                    st.session_state['question_set'] += 1
+        
+        # After answering all sets, make the prediction
+        if st.session_state['question_set'] == 5 and st.button("Make Prediction"):
+            # Collect all answers for prediction
+            input_data = [
+                st.session_state['answers'].get(f"q1_{i}") for i in range(5)
+            ] + [
+                st.session_state['answers'].get(f"q2_{i}") for i in range(5)
+            ] + [
+                st.session_state['answers'].get(f"q3_{i}") for i in range(5)
+            ] + [
+                st.session_state['answers'].get(f"q4_{i}") for i in range(5)
+            ] + [
+                st.session_state['answers'].get(f"q5_{i}") for i in range(2)
+            ]
+            
+            # Perform prediction when the button is pressed
+            try:
+                prediction = model.predict([input_data])
+                st.success(f"Prediction: {prediction[0]}")
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+                
+if __name__ == "__main__":
+    main()

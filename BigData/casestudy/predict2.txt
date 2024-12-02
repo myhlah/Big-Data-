@@ -1,0 +1,111 @@
+# 2 columns
+import streamlit as st
+import pandas as pd
+import joblib
+
+def load_data(uploaded_file):
+    # Define column names as strings
+    feature_names_in_ = ['name','HighBP', 'HighChol', 'CholCheck', 'BMI', 'Smoker', 'Stroke', 'HeartDiseaseorAttack', 'PhysActivity', 'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'GenHlth', 'MentHlth', 'PhysHlth'
+             ,'DiffWalk', 'Sex', 'Age', 'Education', 'Income' ]
+    dataframe = pd.read_csv(uploaded_file, names=feature_names_in_)
+    return dataframe
+
+# Streamlit App Title
+st.title("Make Predictions using a Trained Model")
+
+# Upload a trained model
+model_file = st.file_uploader("Upload your trained model (.pkl file)", type=["pkl"])
+
+# Ensure model is uploaded before proceeding
+if model_file is not None:
+    # Load the model
+    model = joblib.load(model_file)
+    st.success("Model successfully loaded!")
+
+    # Check if model has feature names
+    if hasattr(model, 'feature_names_in_'):
+        feature_names = model.feature_names_in_
+    else:
+        # If feature names are not available, prompt the user to input them
+        feature_names = st.text_area("Enter the feature names separated by commas", "").split(",")
+        feature_names = [f.strip() for f in feature_names]  # Ensure no trailing spaces
+
+    st.write("<br><br>", unsafe_allow_html=True)
+    # Input the feature values for prediction
+
+    st.write("### Answer the following Questions:")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        # Radio buttons for categorical inputs
+        name = st.text_input("Enter your name (Optional):", "")
+        high_bp = st.radio("Do you have high blood pressure?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        high_chol = st.radio("Do you have high cholesterol?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        chol_check = st.radio("Have you had a cholesterol check in the last 5 years?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        bmi = st.number_input("What is your Body Mass Index (BMI)?", min_value=0, max_value=120, value=0, key="BMI")
+        smoker = st.radio("Have you ever smoked at least 100 cigarettes in your entire life?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        stroke = st.radio("Have you ever been told by a doctor that you had a stroke?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        heart_disease = st.radio("Have you ever been diagnosed with coronary heart disease (CHD) or had a myocardial infarction (MI)?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        phys_activity = st.radio("Have you engaged in physical activity in the past 30 days, excluding your job?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        fruits = st.radio("Do you consume fruits at least once per day?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        veggies = st.radio("Do you consume vegetables at least once per day?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        alcohol = st.radio("Do you consume alcohol heavily?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+       
+    with col2:
+        healthcare = st.radio("Do you have any kind of health care coverage?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        doc_cost = st.radio("In the past 12 months, was there ever a time when you needed to see a doctor but could not because of cost?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        gen_health = st.radio("How would you rate your general health?", [1, 2, 3, 4, 5], index=0, format_func=lambda x: ["Excellent", "Very good", "Good", "Fair", "Poor"][x-1])
+        ment_health = st.number_input("In the past 30 days, how many days did you experience poor mental health?", min_value=0, max_value=30, value=0, key="MentHlth")
+        phys_health = st.radio("Do you have any physical health issues?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        diff_walk = st.radio("Do you have serious difficulty walking or climbing stairs?", [0, 1], index=0, format_func=lambda x: "Yes" if x == 1 else "No")
+        sex = st.radio("What is your gender?", [0, 1], index=0, format_func=lambda x: "Male" if x == 1 else "Female")
+        age = st.radio("What is your age category?", [1, 2, 3, 4], index=0, format_func=lambda x: ["18-30", "31-59", "60-79", "80 or older"][x-1])
+        education = st.radio("What is your highest level of education?", [1, 2, 3, 4, 5, 6], index=0, format_func=lambda x: ["No formal education", "Elementary", "High School", "Senior High", "College", "Masters/Doctorate"][x-1])
+        income = st.radio("What is your annual income?", [1, 2, 3, 4, 5, 6], index=0, format_func=lambda x: ["Below 100,000", "100,000-300,000", "300,000-600,000", "600,000-1,000,000", "1,000,000-3,000,000", "Above 3,000,000"][x-1])
+
+   
+    # Creating a dictionary for the input data
+    col1, col2 = st.columns(2)
+    with col1:
+        input_summary = {
+            "Name": name if name else "Not Provided",
+            "High Blood Pressure": "Yes" if high_bp == 1 else "No",
+            "High Cholesterol": "Yes" if high_chol == 1 else "No",
+            "Cholesterol Check": "Yes" if chol_check == 1 else "No",
+            "BMI": bmi,
+            "Smoker": "Yes" if smoker == 1 else "No",
+            "Stroke": "Yes" if stroke == 1 else "No",
+            "Heart Disease/Attack": "Yes" if heart_disease == 1 else "No",
+            "Physical Activity": "Yes" if phys_activity == 1 else "No",
+            "Fruits Consumption": "Yes" if fruits == 1 else "No",
+            "Vegetables Consumption": "Yes" if veggies == 1 else "No",
+            "Heavy Alcohol Consumption": "Yes" if alcohol == 1 else "No",
+            "Healthcare Coverage": "Yes" if healthcare == 1 else "No",
+            "Doctor Visit Due to Cost": "Yes" if doc_cost == 1 else "No",
+            "General Health": ["Excellent", "Very Good", "Good", "Fair", "Poor"][gen_health-1],
+            "Mental Health (Poor Days)": ment_health,
+            "Physical Health Issues": "Yes" if phys_health == 1 else "No",
+            "Difficulty Walking": "Yes" if diff_walk == 1 else "No",
+            "Sex": "Male" if sex == 1 else "Female",
+            "Age Group": ["18-30", "31-59", "60-79", "80 or older"][age-1],
+            "Education Level": ["No formal education", "Elementary", "High School", "Senior High", "College", "Masters/Doctorate"][education-1],
+            "Income Group": ["Below 100,000", "100,000-300,000", "300,000-600,000", "600,000-1,000,000", "1,000,000-3,000,000", "Above 3,000,000"][income-1]
+        }
+        st.write("<br><br>", unsafe_allow_html=True)
+        st.write("### Input Data Summary:")
+        st.write(input_summary)
+
+        # Prepare the data for prediction
+        input_data = [
+            high_bp, high_chol, chol_check, bmi, smoker, stroke, heart_disease, phys_activity, fruits, veggies, alcohol,
+            healthcare, doc_cost, gen_health, ment_health, phys_health, diff_walk, sex, age, education, income
+        ]
+    with col2:    
+        st.write("<br><br>", unsafe_allow_html=True)
+        # Perform prediction when the button is clicked
+        if st.button("Make Prediction"):
+            prediction = model.predict([input_data])
+            if prediction == 1:
+                st.success("Prediction: Likely to have Heart Disease")
+            else:
+                st.success("Prediction: Unlikely to have Heart Disease")
